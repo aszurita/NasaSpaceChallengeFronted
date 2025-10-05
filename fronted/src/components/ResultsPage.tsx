@@ -55,20 +55,19 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
     }
 
     const topPaper = results[0];
-    const topics = topPaper.topics?.slice(0, 3).join(', ') || 'N/A';
-    const organisms = topPaper.organisms?.slice(0, 3).join(', ') || 'N/A';
+    const certainty = (topPaper.certainty * 100).toFixed(1);
     
     const synopsisText = `
-**Top Result:** ${topPaper.Title}
+**Top Result:** ${topPaper.title}
 
-**Research Areas:** ${topics}
+**Abstract:** ${topPaper.abstract}
 
-**Organisms Studied:** ${organisms}
+**Certainty Score:** ${certainty}%
 
-**Relevance Score:** ${topPaper.relevance_score || 'N/A'}
+**Source:** ${topPaper.link}
 
 This paper represents one of the most relevant findings for your search "${searchQuery}". 
-The research focuses on ${topics.toLowerCase()}, providing valuable insights into space biology and its applications.
+The research shows a ${certainty}% certainty match with your query, providing valuable insights into space biology and its applications.
     `.trim();
 
     setSynopsis(synopsisText);
@@ -168,38 +167,25 @@ The research focuses on ${topics.toLowerCase()}, providing valuable insights int
                     onClick={() => onPaperClick(paper)}
                   >
                     <div className="paper-header">
-                      <h3 className="paper-title">{paper.Title}</h3>
+                      <h3 className="paper-title">{paper.title}</h3>
                       <div className="paper-score">
-                        {paper.relevance_score ? `${paper.relevance_score}/10` : '—'}
+                        {(paper.certainty * 100).toFixed(1)}%
                       </div>
                     </div>
 
                     <div className="paper-meta">
-                      {paper.topics && paper.topics.length > 0 && (
-                        <div className="meta-item">
-                          <span className="meta-label">Topics:</span>
-                          <div className="tags">
-                            {paper.topics.slice(0, 3).map((topic: string, i: number) => (
-                              <span key={i} className="tag tag-topic">{topic}</span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {paper.organisms && paper.organisms.length > 0 && (
-                        <div className="meta-item">
-                          <span className="meta-label">Organisms:</span>
-                          <div className="tags">
-                            {paper.organisms.slice(0, 3).map((org: string, i: number) => (
-                              <span key={i} className="tag tag-organism">{org}</span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      <div className="meta-item">
+                        <span className="meta-label">Abstract:</span>
+                        <p className="paper-abstract">{paper.abstract}</p>
+                      </div>
                     </div>
 
                     <div className="paper-footer">
-                      <span className="citations">📊 {paper.citations || 0} citations</span>
+                      <span className="source-link">
+                        <a href={paper.link} target="_blank" rel="noopener noreferrer">
+                          📄 View Source
+                        </a>
+                      </span>
                       <span className="view-more">View Details →</span>
                     </div>
                   </div>

@@ -10,7 +10,15 @@ interface PaperDetailPageProps {
 
 const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
   // Fallback for missing paper
-  const safePaper = paper || { Title: '', topics: [], organisms: [], citations: 0, Link: '', relevance_score: 0 };
+  const safePaper = paper || { 
+    title: '', 
+    abstract: '', 
+    content_preview: '', 
+    link: '', 
+    certainty: 0, 
+    full_abstract: '', 
+    full_content: '' 
+  };
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -20,7 +28,7 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
 
   useEffect(() => {
     const fetchInsights = async () => {
-      if (!safePaper || !safePaper.Title) {
+      if (!safePaper || !safePaper.title) {
         setInsights([]);
         return;
       }
@@ -31,7 +39,7 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            query: safePaper.Title,
+            query: safePaper.title,
             papers: [safePaper]
           })
         });
@@ -49,17 +57,17 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
         } else {
           // Fallback insights based on metadata
           const fallback: string[] = [];
-          if (safePaper.topics?.length) fallback.push(`Focus areas: ${safePaper.topics.slice(0,3).join(', ')}`);
-          if (safePaper.organisms?.length) fallback.push(`Organisms studied: ${safePaper.organisms.slice(0,3).join(', ')}`);
-          fallback.push(`Citations: ${safePaper.citations || 0}`);
+          fallback.push(`Certainty Score: ${(safePaper.certainty * 100).toFixed(1)}%`);
+          fallback.push(`Abstract: ${safePaper.abstract?.substring(0, 100)}...`);
+          fallback.push(`Source: ${safePaper.link}`);
           setInsights(fallback.slice(0,3));
         }
       } catch (e) {
         console.error('Error fetching paper insights:', e);
         const fallback: string[] = [];
-        if (safePaper.topics?.length) fallback.push(`Focus areas: ${safePaper.topics.slice(0,3).join(', ')}`);
-        if (safePaper.organisms?.length) fallback.push(`Organisms studied: ${safePaper.organisms.slice(0,3).join(', ')}`);
-        fallback.push(`Citations: ${safePaper.citations || 0}`);
+        fallback.push(`Certainty Score: ${(safePaper.certainty * 100).toFixed(1)}%`);
+        fallback.push(`Abstract: ${safePaper.abstract?.substring(0, 100)}...`);
+        fallback.push(`Source: ${safePaper.link}`);
         setInsights(fallback.slice(0,3));
       } finally {
         setInsightsLoading(false);
@@ -113,7 +121,7 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
       </nav>
 
       <div className="graph-section">
-        <CytoscapeGraph paperId={safePaper.id || 0} />
+        <CytoscapeGraph paperId={safePaper.title ? safePaper.title.length : 0} />
       </div>
 
       <div className="content-section" ref={contentRef}>
@@ -146,59 +154,51 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
                     <span className="card-icon">📄</span>
                     <h3>Title</h3>
                   </div>
-                  <p>{safePaper.Title}</p>
+                  <p>{safePaper.title}</p>
                 </div>
 
-                {safePaper.topics && safePaper.topics.length > 0 && (
-                  <div className="summary-card">
-                    <div className="card-header">
-                      <span className="card-icon">🏷️</span>
-                      <h3>Research Topics</h3>
-                    </div>
-                    <div className="tags-container">
-                      {safePaper.topics.map((topic: string, i: number) => (
-                        <span key={i} className="tag">{topic}</span>
-                      ))}
-                    </div>
+                <div className="summary-card">
+                  <div className="card-header">
+                    <span className="card-icon">📝</span>
+                    <h3>Abstract</h3>
                   </div>
-                )}
+                  <p>{safePaper.abstract}</p>
+                </div>
 
-                {safePaper.organisms && safePaper.organisms.length > 0 && (
+                {safePaper.full_abstract && safePaper.full_abstract !== safePaper.abstract && (
                   <div className="summary-card">
                     <div className="card-header">
-                      <span className="card-icon">🧬</span>
-                      <h3>Organisms Studied</h3>
+                      <span className="card-icon">📋</span>
+                      <h3>Full Abstract</h3>
                     </div>
-                    <div className="tags-container">
-                      {safePaper.organisms.map((org: string, i: number) => (
-                        <span key={i} className="tag tag-organism">{org}</span>
-                      ))}
-                    </div>
+                    <p>{safePaper.full_abstract}</p>
                   </div>
                 )}
 
                 <div className="summary-card">
                   <div className="card-header">
                     <span className="card-icon">📊</span>
-                    <h3>Impact</h3>
+                    <h3>Match Quality</h3>
                   </div>
                   <div className="impact-stats">
                     <div className="stat">
-                      <span className="stat-label">Citations</span>
-                      <span className="stat-value">{safePaper.citations || 0}</span>
+                      <span className="stat-label">Certainty</span>
+                      <span className="stat-value">{(safePaper.certainty * 100).toFixed(1)}%</span>
                     </div>
-                    {safePaper.relevance_score && (
-                      <div className="stat">
-                        <span className="stat-label">Relevance</span>
-                        <span className="stat-value">{safePaper.relevance_score}/10</span>
-                      </div>
-                    )}
+                    <div className="stat">
+                      <span className="stat-label">Source</span>
+                      <span className="stat-value">
+                        <a href={safePaper.link} target="_blank" rel="noopener noreferrer">
+                          View Paper
+                        </a>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <a
-                href={safePaper.Link}
+                href={safePaper.link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="view-original-button"

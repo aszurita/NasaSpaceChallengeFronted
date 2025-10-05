@@ -343,6 +343,18 @@
   font-weight: 500;
 }
 
+.paper-abstract {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .tags {
   display: flex;
   flex-wrap: wrap;
@@ -380,6 +392,17 @@
 .citations {
   color: #a0aec0;
   font-size: 0.9rem;
+}
+
+.source-link a {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.source-link a:hover {
+  text-decoration: underline;
 }
 
 .view-more {

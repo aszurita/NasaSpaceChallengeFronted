@@ -69,7 +69,8 @@
 
 .topic-badge,
 .organism-badge,
-.score {
+.score,
+.certainty-badge {
   padding: 4px 10px;
   border-radius: 5px;
   font-size: 11px;
@@ -89,6 +90,31 @@
 .score {
   background: rgba(255, 152, 0, 0.2);
   color: #FF9800;
+}
+
+.certainty-badge {
+  background: rgba(156, 39, 176, 0.2);
+  color: #9C27B0;
+}
+
+.result-abstract {
+  margin: 8px 0;
+  font-size: 0.9em;
+  color: #ccc;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.score a {
+  color: #FF9800;
+  text-decoration: none;
+}
+
+.score a:hover {
+  text-decoration: underline;
 }
 
 .results-list::-webkit-scrollbar {

@@ -26,8 +26,8 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query,
-          top_n: 20
+          query: query,
+          papers: 20 // Send top 20 papers for context
         })
       });
 
@@ -40,7 +40,8 @@ function App() {
       const data = await response.json();
       console.log('Search results:', data);
       
-      setSearchResults(data.results || []);
+      // Handle the new data format with items array
+      setSearchResults(data.items || []);
       setCurrentPage('results');
     } catch (error) {
       console.error('Search error:', error);

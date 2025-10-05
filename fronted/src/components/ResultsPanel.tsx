@@ -21,18 +21,20 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, onSelectPaper }) =
       <div className="results-list">
         {results.map((paper, idx) => (
           <div 
-            key={paper.id} 
+            key={idx} 
             className="result-card"
             onClick={() => onSelectPaper(paper)}
           >
             <div className="result-rank">#{idx + 1}</div>
             <div className="result-content">
-              <h4>{paper.Title}</h4>
+              <h4>{paper.title}</h4>
+              <p className="result-abstract">{paper.abstract}</p>
               <div className="result-meta">
-                <span className="topic-badge">{paper.topics[0]}</span>
-                <span className="organism-badge">{paper.organisms[0]}</span>
+                <span className="certainty-badge">
+                  Certainty: {(paper.certainty * 100).toFixed(1)}%
+                </span>
                 <span className="score">
-                  Score: {paper.relevance_score || 0}
+                  Link: <a href={paper.link} target="_blank" rel="noopener noreferrer">View Paper</a>
                 </span>
               </div>
             </div>
