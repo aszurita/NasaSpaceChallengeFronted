@@ -206,24 +206,6 @@ The research shows a ${certainty}% certainty match with your query, providing va
           </div>
         ) : (
           <>
-            {/* Synopsis Section */}
-            {synopsis && (
-              <section className="synopsis-section">
-                <h2 className="section-title">
-                  <span className="icon">📄</span> Top Result Synopsis
-                </h2>
-                <div className="synopsis-card">
-                  <pre className="synopsis-text">{synopsis}</pre>
-                  <button 
-                    className="view-paper-btn"
-                    onClick={() => onPaperClick(results[0])}
-                  >
-                    View Full Paper Details →
-                  </button>
-                </div>
-              </section>
-            )}
-
             {/* Insight Section */}
             <section className="insight-section">
               <h2 className="section-title">
