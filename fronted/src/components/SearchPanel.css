@@ -1,0 +1,115 @@
+.search-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.search-panel h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.4em;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.search-btn {
+  width: 100%;
+  padding: 12px;
+  background: #4CAF50;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.search-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.quick-searches {
+  margin: 15px 0;
+}
+
+.quick-searches h4 {
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.quick-searches button {
+  display: inline-block;
+  margin: 5px 5px 5px 0;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-searches button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #4CAF50;
+}
+
+.filters {
+  margin-top: 20px;
+}
+
+.filters h4 {
+  margin: 15px 0 10px 0;
+  font-size: 1em;
+  color: #4CAF50;
+}
+
+.filter-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.filter-checkbox {
+  display: block;
+  padding: 8px 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.filter-checkbox input {
+  margin-right: 8px;
+}
+
+.filter-checkbox:hover {
+  color: #4CAF50;
+}
+
+.filter-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.filter-list::-webkit-scrollbar-thumb {
+  background: rgba(76, 175, 80, 0.5);
+  border-radius: 3px;
+}

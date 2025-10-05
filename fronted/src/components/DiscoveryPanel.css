@@ -1,0 +1,209 @@
+.discovery-panel {
+  padding: 20px;
+}
+
+.discovery-header {
+  margin-bottom: 25px;
+}
+
+.discovery-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 1.8em;
+}
+
+.discovery-header p {
+  color: #aaa;
+  margin: 0;
+}
+
+.search-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.discovery-input {
+  flex: 1;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+}
+
+.discovery-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.discover-btn {
+  padding: 15px 30px;
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.discover-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.discover-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.popular-topics {
+  margin-bottom: 25px;
+}
+
+.popular-topics h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.topic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topic-chip {
+  padding: 8px 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.topic-chip:hover {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: #4CAF50;
+}
+
+.discovery-results {
+  margin-top: 30px;
+}
+
+.results-header {
+  margin-bottom: 20px;
+}
+
+.results-header h3 {
+  margin: 0 0 10px 0;
+  color: #4CAF50;
+}
+
+.context-info {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.papers-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.paper-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.paper-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.paper-item.selected {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #4CAF50;
+}
+
+.paper-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.paper-content {
+  flex: 1;
+}
+
+.paper-content h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.95em;
+  line-height: 1.4;
+}
+
+.paper-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.score {
+  padding: 4px 10px;
+  background: rgba(255, 152, 0, 0.2);
+  color: #FF9800;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.topic-tag {
+  padding: 4px 10px;
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196F3;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.selection-info {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.start-chat-btn {
+  padding: 12px 25px;
+  background: linear-gradient(45deg, #2196F3, #1976D2);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.start-chat-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.start-chat-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

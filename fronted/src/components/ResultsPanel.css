@@ -1,0 +1,106 @@
+.results-panel {
+  padding: 20px;
+}
+
+.results-panel h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.3em;
+  color: #4CAF50;
+}
+
+.results-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #aaa;
+  font-size: 1.1em;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 550px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  gap: 15px;
+}
+
+.result-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #4CAF50;
+  transform: translateX(5px);
+}
+
+.result-rank {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #4CAF50;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-content {
+  flex: 1;
+}
+
+.result-content h4 {
+  margin: 0 0 10px 0;
+  font-size: 1em;
+  line-height: 1.4;
+}
+
+.result-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.topic-badge,
+.organism-badge,
+.score {
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.topic-badge {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+}
+
+.organism-badge {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196F3;
+}
+
+.score {
+  background: rgba(255, 152, 0, 0.2);
+  color: #FF9800;
+}
+
+.results-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.results-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.results-list::-webkit-scrollbar-thumb {
+  background: rgba(76, 175, 80, 0.5);
+  border-radius: 4px;
+}
