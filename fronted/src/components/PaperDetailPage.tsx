@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_URL } from '../config';
+import CytoscapeGraph from './CytoscapeGraph';
 import '../styles/PaperDetailPage.css';
 
 interface PaperDetailPageProps {
@@ -9,55 +11,10 @@ interface PaperDetailPageProps {
 const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
   // Fallback for missing paper
   const safePaper = paper || { Title: '', topics: [], organisms: [], citations: 0, Link: '', relevance_score: 0 };
-  const [graphBuilding, setGraphBuilding] = useState(true);
-  const [nodes, setNodes] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Simulate graph building animation
-    buildKnowledgeGraph();
-  }, [safePaper]);
-
-  const buildKnowledgeGraph = () => {
-    setGraphBuilding(true);
-
-    // Simulate nodes appearing one by one
-    const allNodes = [
-      { id: 'paper', label: safePaper.Title, type: 'main' },
-      ...(safePaper.topics || []).slice(0, 4).map((topic: string, i: number) => ({
-        id: `topic-${i}`,
-        label: topic,
-        type: 'topic'
-      })),
-      ...(safePaper.organisms || []).slice(0, 3).map((org: string, i: number) => ({
-        id: `org-${i}`,
-        label: org,
-        type: 'organism'
-      }))
-    ];
-
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      if (currentIndex < allNodes.length) {
-        setNodes(prev => [...prev, allNodes[currentIndex]]);
-        currentIndex++;
-      } else {
-        clearInterval(interval);
-        setTimeout(() => {
-          setGraphBuilding(false);
-          // Auto scroll to content
-          setTimeout(() => {
-            contentRef.current?.scrollIntoView({ behavior: 'smooth' });
-          }, 500);
-        }, 1000);
-      }
-    }, 400);
-
-    return () => clearInterval(interval);
-  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +26,7 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
     setChatLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -104,68 +61,7 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
       </nav>
 
       <div className="graph-section">
-        <h2 className="graph-title">
-          {graphBuilding ? 'Building Knowledge Graph...' : 'Knowledge Graph Complete'}
-        </h2>
-
-        <div className="knowledge-graph">
-          <svg className="graph-svg" viewBox="0 0 800 400">
-            {/* Draw connections */}
-            {nodes.map((node, index) => {
-              if (node.type !== 'main') {
-                const angle = (index / (nodes.length - 1)) * Math.PI * 2;
-                const x1 = 400;
-                const y1 = 200;
-                const x2 = 400 + Math.cos(angle) * 150;
-                const y2 = 200 + Math.sin(angle) * 120;
-
-                return (
-                  <line
-                    key={`line-${node.id}`}
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    className="graph-edge"
-                  />
-                );
-              }
-              return null;
-            })}
-
-            {/* Draw nodes */}
-            {nodes.map((node, index) => {
-              let x, y;
-              if (node.type === 'main') {
-                x = 400;
-                y = 200;
-              } else {
-                const angle = (index / (nodes.length - 1)) * Math.PI * 2;
-                x = 400 + Math.cos(angle) * 150;
-                y = 200 + Math.sin(angle) * 120;
-              }
-
-              return (
-                <g key={node.id} className={`graph-node node-${node.type}`}>
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r={node.type === 'main' ? 40 : 25}
-                    className={`node-circle node-${node.type}`}
-                  />
-                  <text
-                    x={x}
-                    y={y + (node.type === 'main' ? 60 : 45)}
-                    className="node-label"
-                    textAnchor="middle"
-                  >
-                    {node.label.length > 20 ? node.label.substring(0, 20) + '...' : node.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
+        <CytoscapeGraph paperId={safePaper.id || 0} />
       </div>
 
       <div className="content-section" ref={contentRef}>

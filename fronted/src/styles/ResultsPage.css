@@ -91,6 +91,20 @@
 .search-info {
   margin-bottom: 2rem;
   animation: fadeInUp 0.6s ease-out;
+  text-align: center;
+}
+
+.search-title {
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.results-count {
+  font-size: 1.1rem;
+  color: #a0aec0;
+  margin: 0;
 }
 
 .search-message {
@@ -102,6 +116,98 @@
 .query-highlight {
   color: #667eea;
   font-weight: 600;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 4rem 2rem;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.no-results-icon {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-results h3 {
+  font-size: 2rem;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.no-results p {
+  font-size: 1.1rem;
+  color: #a0aec0;
+}
+
+/* Graph Section */
+.graph-section {
+  margin-bottom: 3rem;
+  animation: fadeInUp 0.7s ease-out;
+}
+
+.graph-wrapper {
+  background: rgba(10, 14, 39, 0.8);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 600px;
+}
+
+.graph-description {
+  margin-top: 1rem;
+  text-align: center;
+  color: #a0aec0;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+/* Synopsis Section */
+.synopsis-section {
+  margin-bottom: 3rem;
+  animation: fadeInUp 0.75s ease-out;
+}
+
+.synopsis-card {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15);
+}
+
+.synopsis-text {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #e2e8f0;
+  margin: 0 0 1.5rem 0;
+  white-space: pre-wrap;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.view-paper-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.view-paper-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 /* Insight Section */

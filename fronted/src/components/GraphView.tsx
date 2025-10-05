@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import { API_URL } from '../config';
 import './GraphView.css';
 
 interface GraphViewProps {
@@ -17,7 +18,7 @@ const GraphView: React.FC<GraphViewProps> = ({ papers, onSelectPaper }) => {
 
   const fetchGraphData = async () => {
     try {
-      const response = await fetch('http://localhost:8000/graph');
+      const response = await fetch(`${API_URL}/graph`);
       const data = await response.json();
       
       // Si hay papers filtrados, mostrar solo esos

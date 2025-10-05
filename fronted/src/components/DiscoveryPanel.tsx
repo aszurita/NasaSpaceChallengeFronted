@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config';
 import './DiscoveryPanel.css';
 
 interface Paper {
   id: number;
   Title: string;
-  Link: string;
   topics: string[];
   organisms: string[];
   discovery_score: number;
@@ -35,7 +35,7 @@ const DiscoveryPanel: React.FC<DiscoveryPanelProps> = ({ onPapersSelected }) => 
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/discover', {
+      const response = await fetch(`${API_URL}/discover`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

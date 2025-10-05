@@ -1,0 +1,203 @@
+{
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "paper_1",
+          "label": "Microgravity Effects on Bone Loss",
+          "type": "paper",
+          "citations": 107,
+          "color": "#667eea"
+        }
+      },
+      {
+        "data": {
+          "id": "topic_microgravity",
+          "label": "Microgravity",
+          "type": "topic",
+          "color": "#764ba2"
+        }
+      },
+      {
+        "data": {
+          "id": "topic_bone",
+          "label": "Bone Loss",
+          "type": "topic",
+          "color": "#764ba2"
+        }
+      },
+      {
+        "data": {
+          "id": "organism_mouse",
+          "label": "Mouse",
+          "type": "organism",
+          "color": "#f093fb"
+        }
+      },
+      {
+        "data": {
+          "id": "gene_cdkn1a",
+          "label": "CDKN1a/p21",
+          "type": "gene",
+          "color": "#4facfe"
+        }
+      },
+      {
+        "data": {
+          "id": "process_osteoclast",
+          "label": "Osteoclastic Activity",
+          "type": "process",
+          "color": "#43e97b"
+        }
+      },
+      {
+        "data": {
+          "id": "process_osteolysis",
+          "label": "Osteocytic Osteolysis",
+          "type": "process",
+          "color": "#43e97b"
+        }
+      },
+      {
+        "data": {
+          "id": "method_iss",
+          "label": "ISS Experiment",
+          "type": "method",
+          "color": "#fa709a"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "e1",
+          "source": "paper_1",
+          "target": "topic_microgravity",
+          "label": "studies",
+          "relationship": "STUDIES"
+        }
+      },
+      {
+        "data": {
+          "id": "e2",
+          "source": "paper_1",
+          "target": "topic_bone",
+          "label": "investigates",
+          "relationship": "INVESTIGATES"
+        }
+      },
+      {
+        "data": {
+          "id": "e3",
+          "source": "paper_1",
+          "target": "organism_mouse",
+          "label": "uses_model",
+          "relationship": "USES_MODEL"
+        }
+      },
+      {
+        "data": {
+          "id": "e4",
+          "source": "topic_microgravity",
+          "target": "process_osteoclast",
+          "label": "induces",
+          "relationship": "INDUCES"
+        }
+      },
+      {
+        "data": {
+          "id": "e5",
+          "source": "topic_microgravity",
+          "target": "process_osteolysis",
+          "label": "causes",
+          "relationship": "CAUSES"
+        }
+      },
+      {
+        "data": {
+          "id": "e6",
+          "source": "gene_cdkn1a",
+          "target": "topic_bone",
+          "label": "regulates",
+          "relationship": "REGULATES"
+        }
+      },
+      {
+        "data": {
+          "id": "e7",
+          "source": "paper_1",
+          "target": "gene_cdkn1a",
+          "label": "identifies",
+          "relationship": "IDENTIFIES"
+        }
+      },
+      {
+        "data": {
+          "id": "e8",
+          "source": "method_iss",
+          "target": "paper_1",
+          "label": "conducted_in",
+          "relationship": "CONDUCTED_IN"
+        }
+      }
+    ]
+  },
+  "style": [
+    {
+      "selector": "node",
+      "style": {
+        "background-color": "data(color)",
+        "label": "data(label)",
+        "text-valign": "center",
+        "text-halign": "center",
+        "font-size": "12px",
+        "color": "#fff",
+        "text-outline-color": "#000",
+        "text-outline-width": 2,
+        "width": "60px",
+        "height": "60px"
+      }
+    },
+    {
+      "selector": "node[type='paper']",
+      "style": {
+        "width": "80px",
+        "height": "80px",
+        "font-size": "14px",
+        "font-weight": "bold"
+      }
+    },
+    {
+      "selector": "edge",
+      "style": {
+        "width": 3,
+        "line-color": "#999",
+        "target-arrow-color": "#999",
+        "target-arrow-shape": "triangle",
+        "curve-style": "bezier",
+        "label": "data(label)",
+        "font-size": "10px",
+        "text-rotation": "autorotate",
+        "text-margin-y": -10
+      }
+    }
+  ],
+  "layout": {
+    "name": "cose",
+    "idealEdgeLength": 100,
+    "nodeOverlap": 20,
+    "refresh": 20,
+    "fit": true,
+    "padding": 30,
+    "randomize": false,
+    "componentSpacing": 100,
+    "nodeRepulsion": 400000,
+    "edgeElasticity": 100,
+    "nestingFactor": 5,
+    "gravity": 80,
+    "numIter": 1000,
+    "initialTemp": 200,
+    "coolingFactor": 0.95,
+    "minTemp": 1.0
+  }
+}

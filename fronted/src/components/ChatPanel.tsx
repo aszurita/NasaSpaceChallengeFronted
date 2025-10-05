@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { API_URL } from '../config';
 import './ChatPanel.css';
 
 interface Message {
@@ -49,7 +50,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ contextPapers, onClose }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

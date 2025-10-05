@@ -3,6 +3,7 @@ import './App.css';
 import HomePage from './components/HomePage';
 import ResultsPage from './components/ResultsPage';
 import PaperDetailPage from './components/PaperDetailPage';
+import { API_URL } from './config';
 
 type PageView = 'home' | 'results' | 'paper-detail';
 
@@ -18,7 +19,10 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/search', {
+      console.log('Searching for:', query);
+      console.log('API URL:', API_URL);
+      
+      const response = await fetch(`${API_URL}/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -27,16 +31,24 @@ function App() {
         })
       });
 
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log('Search results:', data);
+      
       setSearchResults(data.results || []);
       setCurrentPage('results');
     } catch (error) {
       console.error('Search error:', error);
-      // Mock data for development
+      alert(`Error searching: ${error}. Please check if the backend is running on port 8000.`);
       setSearchResults([]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handlePaperClick = (paper: any) => {

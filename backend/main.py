@@ -3,21 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import json
-import os
-
-# Nuevo 
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
-import json
+from collections import Counter
 
 app = FastAPI(title="BioSpace Knowledge API")
 
 # CORS para desarrollo
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,12 +30,24 @@ class SearchQuery(BaseModel):
     organisms: Optional[List[str]] = None
     top_n: int = 10
 
+class DiscoveryQuery(BaseModel):
+    topic: str
+    max_results: int = 10
+
+class ChatMessage(BaseModel):
+    message: str
+    paper_ids: List[int]
+
+class InsightQuery(BaseModel):
+    query: str
+    papers: List[dict]
+
 @app.get("/")
 def read_root():
     return {
         "message": "BioSpace Knowledge API",
         "total_papers": len(PAPERS),
-        "endpoints": ["/papers", "/search", "/graph", "/stats"]
+        "endpoints": ["/papers", "/search", "/graph", "/stats", "/filters", "/generate-insight"]
     }
 
 @app.get("/papers")
@@ -99,18 +104,26 @@ def search_papers(query: SearchQuery):
     }
 
 @app.get("/graph")
-def get_graph(topic: Optional[str] = None):
-    """Obtener datos del grafo"""
-    if not topic:
+def get_graph(topic: Optional[str] = None, paper_ids: Optional[str] = None):
+    """Obtener datos del grafo, opcionalmente filtrado por topic o paper_ids"""
+    if not topic and not paper_ids:
         return GRAPH
     
+    # Filtrar por paper_ids si se proporciona
+    if paper_ids:
+        ids_list = [int(id.strip()) for id in paper_ids.split(',')]
+        filtered_nodes = [
+            node for node in GRAPH['nodes']
+            if node['id'] in ids_list
+        ]
+        node_ids = set(ids_list)
     # Filtrar por topic
-    filtered_nodes = [
-        node for node in GRAPH['nodes']
-        if topic in node.get('topics', [])
-    ]
-    
-    node_ids = {node['id'] for node in filtered_nodes}
+    elif topic:
+        filtered_nodes = [
+            node for node in GRAPH['nodes']
+            if topic in node.get('topics', [])
+        ]
+        node_ids = {node['id'] for node in filtered_nodes}
     
     filtered_links = [
         link for link in GRAPH['links']
@@ -132,14 +145,66 @@ def get_statistics():
         all_topics.extend(paper['topics'])
         all_organisms.extend(paper['organisms'])
     
-    from collections import Counter
-    
     return {
         "total_papers": len(PAPERS),
         "total_connections": len(GRAPH['links']),
         "topics_distribution": dict(Counter(all_topics)),
         "organisms_distribution": dict(Counter(all_organisms)),
-        "years_range": [2000, 2025]  # Ajustar después
+        "years_range": [2000, 2025]
+    }
+
+@app.get("/filters")
+def get_filters():
+    """Obtener filtros disponibles (topics y organisms)"""
+    all_topics = set()
+    all_organisms = set()
+    
+    for paper in PAPERS:
+        all_topics.update(paper.get('topics', []))
+        all_organisms.update(paper.get('organisms', []))
+    
+    return {
+        "topics": sorted(list(all_topics)),
+        "organisms": sorted(list(all_organisms))
+    }
+
+@app.post("/generate-insight")
+def generate_insight(query: InsightQuery):
+    """Generar insight basado en papers encontrados"""
+    if not query.papers:
+        return {"insight": "No papers found for this search."}
+    
+    # Extraer temas y organismos comunes
+    all_topics = []
+    all_organisms = []
+    
+    for paper in query.papers:
+        all_topics.extend(paper.get('topics', []))
+        all_organisms.extend(paper.get('organisms', []))
+    
+    top_topics = Counter(all_topics).most_common(3)
+    top_organisms = Counter(all_organisms).most_common(3)
+    
+    # Generar insight
+    insight_parts = []
+    
+    if top_topics:
+        topics_str = ", ".join([t[0] for t in top_topics])
+        insight_parts.append(f"The search reveals significant research in {topics_str}")
+    
+    if top_organisms:
+        organisms_str = ", ".join([o[0] for o in top_organisms])
+        insight_parts.append(f"focusing on organisms such as {organisms_str}")
+    
+    insight_parts.append(f"Based on {len(query.papers)} papers, this research area shows active investigation in space biology.")
+    
+    insight = ". ".join(insight_parts)
+    
+    return {
+        "insight": insight,
+        "top_topics": [t[0] for t in top_topics],
+        "top_organisms": [o[0] for o in top_organisms],
+        "paper_count": len(query.papers)
     }
 
 @app.get("/paper/{paper_id}")
@@ -166,13 +231,169 @@ def get_paper_details(paper_id: int):
         **paper,
         "related_papers": related_papers
     }
-class DiscoveryQuery(BaseModel):
-    topic: str
-    max_results: int = 10
 
-class ChatMessage(BaseModel):
-    message: str
-    paper_ids: List[int]
+@app.get("/paper/{paper_id}/cytoscape-graph")
+def get_paper_cytoscape_graph(paper_id: int):
+    """Genera un grafo de conocimiento en formato Cytoscape para un paper específico"""
+    paper = next((p for p in PAPERS if p['id'] == paper_id), None)
+    
+    if not paper:
+        raise HTTPException(status_code=404, detail="Paper not found")
+    
+    # Crear nodos
+    nodes = []
+    edges = []
+    
+    # Nodo principal del paper
+    nodes.append({
+        "data": {
+            "id": f"paper_{paper_id}",
+            "label": paper['Title'][:50] + "..." if len(paper['Title']) > 50 else paper['Title'],
+            "type": "paper",
+            "citations": paper.get('citations', 0),
+            "color": "#667eea"
+        }
+    })
+    
+    # Nodos de topics
+    for idx, topic in enumerate(paper.get('topics', [])[:5]):
+        topic_id = f"topic_{paper_id}_{idx}"
+        nodes.append({
+            "data": {
+                "id": topic_id,
+                "label": topic.replace('_', ' ').title(),
+                "type": "topic",
+                "color": "#764ba2"
+            }
+        })
+        edges.append({
+            "data": {
+                "id": f"e_paper_topic_{idx}",
+                "source": f"paper_{paper_id}",
+                "target": topic_id,
+                "label": "studies",
+                "relationship": "STUDIES"
+            }
+        })
+    
+    # Nodos de organisms
+    for idx, organism in enumerate(paper.get('organisms', [])[:3]):
+        organism_id = f"organism_{paper_id}_{idx}"
+        nodes.append({
+            "data": {
+                "id": organism_id,
+                "label": organism,
+                "type": "organism",
+                "color": "#f093fb"
+            }
+        })
+        edges.append({
+            "data": {
+                "id": f"e_paper_organism_{idx}",
+                "source": f"paper_{paper_id}",
+                "target": organism_id,
+                "label": "uses model",
+                "relationship": "USES_MODEL"
+            }
+        })
+    
+    # Agregar nodos de papers relacionados
+    related_links = [
+        link for link in GRAPH['links']
+        if link['source'] == paper_id or link['target'] == paper_id
+    ][:3]
+    
+    for idx, link in enumerate(related_links):
+        related_id = link['source'] if link['source'] != paper_id else link['target']
+        related_paper = next((p for p in PAPERS if p['id'] == related_id), None)
+        
+        if related_paper:
+            related_node_id = f"related_{related_id}"
+            nodes.append({
+                "data": {
+                    "id": related_node_id,
+                    "label": related_paper['Title'][:40] + "...",
+                    "type": "related_paper",
+                    "color": "#4facfe"
+                }
+            })
+            edges.append({
+                "data": {
+                    "id": f"e_related_{idx}",
+                    "source": f"paper_{paper_id}",
+                    "target": related_node_id,
+                    "label": "related to",
+                    "relationship": "RELATED_TO"
+                }
+            })
+    
+    return {
+        "elements": {
+            "nodes": nodes,
+            "edges": edges
+        },
+        "style": [
+            {
+                "selector": "node",
+                "style": {
+                    "background-color": "data(color)",
+                    "label": "data(label)",
+                    "text-valign": "center",
+                    "text-halign": "center",
+                    "font-size": "12px",
+                    "color": "#fff",
+                    "text-outline-color": "#000",
+                    "text-outline-width": 2,
+                    "width": "60px",
+                    "height": "60px",
+                    "text-wrap": "wrap",
+                    "text-max-width": "100px"
+                }
+            },
+            {
+                "selector": "node[type='paper']",
+                "style": {
+                    "width": "80px",
+                    "height": "80px",
+                    "font-size": "14px",
+                    "font-weight": "bold"
+                }
+            },
+            {
+                "selector": "edge",
+                "style": {
+                    "width": 3,
+                    "line-color": "#999",
+                    "target-arrow-color": "#999",
+                    "target-arrow-shape": "triangle",
+                    "curve-style": "bezier",
+                    "label": "data(label)",
+                    "font-size": "10px",
+                    "text-rotation": "autorotate",
+                    "text-margin-y": -10,
+                    "color": "#666"
+                }
+            }
+        ],
+        "layout": {
+            "name": "cose",
+            "idealEdgeLength": 100,
+            "nodeOverlap": 20,
+            "refresh": 20,
+            "fit": True,
+            "padding": 30,
+            "randomize": False,
+            "componentSpacing": 100,
+            "nodeRepulsion": 400000,
+            "edgeElasticity": 100,
+            "nestingFactor": 5,
+            "gravity": 80,
+            "numIter": 1000,
+            "initialTemp": 200,
+            "coolingFactor": 0.95,
+            "minTemp": 1.0
+        }
+    }
 
 @app.post("/discover")
 def discover_sources(query: DiscoveryQuery):
@@ -369,6 +590,7 @@ Los efectos de la microgravedad incluyen:
         "sources": relevant_sources,
         "total_papers_in_context": len(context_papers)
     }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_URL } from '../config';
 import './StatsPanel.css';
 
 const StatsPanel: React.FC = () => {
@@ -10,7 +11,7 @@ const StatsPanel: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/stats');
+      const response = await fetch(`${API_URL}/stats`);
       const data = await response.json();
       setStats(data);
     } catch (error) {

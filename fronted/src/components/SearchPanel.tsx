@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 import './SearchPanel.css';
 
 interface SearchPanelProps {
   onSearch: (query: string, filters: any) => void;
 }
-
 const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch }) => {
   const [query, setQuery] = useState('');
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -14,7 +14,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch }) => {
 
   useEffect(() => {
     // Cargar filtros disponibles del backend
-    fetch('http://localhost:8000/filters')
+    fetch(`${API_URL}/filters`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data && typeof data === 'object') {
