@@ -27,9 +27,9 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
   useEffect(() => {
     // Mostrar insights fijos en español sobre microgravedad y células
     setInsights([
-      "La microgravedad altera fundamentalmente los procesos celulares básicos incluyendo división celular, expresión génica y señalización celular. Estos cambios ocurren debido a la ausencia de fuerzas gravitacionales que normalmente guían la orientación y función celular.",
-      "Las células expuestas a microgravedad experimentan estrés oxidativo aumentado y disfunción mitocondrial, lo que puede llevar a daño en el ADN y envejecimiento celular prematuro. Esto tiene implicaciones directas para la salud de astronautas en misiones espaciales prolongadas.",
-      "Los sistemas de cultivo celular en microgravedad permiten modelar enfermedades humanas de manera más precisa que en gravedad terrestre, ofreciendo nuevas oportunidades para desarrollo de fármacos y terapias regenerativas aplicables en la Tierra."
+      "Microgravity fundamentally alters basic cellular processes including cell division, gene expression, and cell signaling. These changes occur due to the absence of gravitational forces that normally guide cell orientation and function.",
+      "Cells exposed to microgravity experience increased oxidative stress and mitochondrial dysfunction, which can lead to DNA damage and premature cellular aging. This has direct implications for astronaut health during extended space missions.",
+      "Cell culture systems in microgravity allow for more accurate modeling of human diseases than on Earth, offering new opportunities for drug development and regenerative therapies applicable on Earth."
     ]);
   }, [safePaper]);
 
