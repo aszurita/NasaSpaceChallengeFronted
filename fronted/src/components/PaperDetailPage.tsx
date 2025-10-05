@@ -37,7 +37,10 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
         // Use the insights endpoint for better analysis
         const response = await fetch(`${API_URL}/search/insights`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({
             query: safePaper.title,
             papers: 5
@@ -86,7 +89,10 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
     try {
       const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           message: chatInput,
           context_papers: [paper]

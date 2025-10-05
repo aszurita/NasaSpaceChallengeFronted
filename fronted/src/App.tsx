@@ -24,7 +24,10 @@ function App() {
       
       const response = await fetch(`${API_URL}/search`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           query: query,
           papers: 20 // Send top 20 papers for context

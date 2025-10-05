@@ -34,10 +34,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ contextPapers, onClose }) => {
   }, [messages]);
 
   const quickQuestions = [
-    '¿Qué estudian estos papers?',
-    '¿Qué efectos tiene la microgravedad?',
-    '¿Qué dice sobre pérdida ósea?',
-    'Háblame sobre radiación espacial'
+    'Explain this paper to me',
+    'What are the main findings?',
   ];
 
   const handleSend = async (question?: string) => {
@@ -50,12 +48,15 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ contextPapers, onClose }) => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/chat`, {
+      // Construir el query con los títulos de los papers y la pregunta del usuario
+      const paperTitles = contextPapers.map(p => p.Title).join(', ');
+      const query = `${paperTitles} ${messageText}`;
+
+      const response = await fetch(`${API_URL}/ask_paper`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: messageText,
-          paper_ids: contextPapers.map(p => p.id)
+          query: query
         })
       });
 
@@ -63,7 +64,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ contextPapers, onClose }) => {
 
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.response,
+        content: data.answer,
         sources: data.sources
       };
 
