@@ -34,26 +34,24 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
       }
       setInsightsLoading(true);
       try {
-        // Reuse the same multi-paper insight endpoint but with a single paper
-        const response = await fetch(`${API_URL}/generate-insight`, {
+        // Use the insights endpoint for better analysis
+        const response = await fetch(`${API_URL}/search/insights`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: safePaper.title,
-            papers: [safePaper]
+            papers: 5
           })
         });
         const data = await response.json();
         const text: string = data.insight || '';
-        // Derive up to 3 concise insights from the response
-        const items = text
-          .replace(/\n+/g, ' ')
-          .split(/[\.\u2026\!\?]/)
-          .map(s => s.trim())
-          .filter(Boolean)
-          .slice(0, 3);
-        if (items.length > 0) {
-          setInsights(items);
+        
+        // Split the insight into meaningful paragraphs
+        const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
+        
+        if (paragraphs.length > 0) {
+          // Take the first 3 paragraphs as insights
+          setInsights(paragraphs.slice(0, 3));
         } else {
           // Fallback insights based on metadata
           const fallback: string[] = [];
@@ -138,12 +136,14 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
               ) : (
                 <div className="summary-cards">
                   {insights.map((ins, i) => (
-                    <div key={i} className="summary-card">
+                    <div key={i} className="summary-card insight-card">
                       <div className="card-header">
                         <span className="card-icon">{i === 0 ? '⭐' : i === 1 ? '✨' : '🔎'}</span>
                         <h3>Insight #{i + 1}</h3>
                       </div>
-                      <p>{ins}</p>
+                      <div className="insight-content">
+                        <p className="insight-text">{ins}</p>
+                      </div>
                     </div>
                   ))}
                 </div>

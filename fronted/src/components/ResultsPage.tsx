@@ -30,12 +30,13 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/generate-insight`, {
+      const response = await fetch(`${API_URL}/search/insights
+`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: searchQuery,
-          papers: results.slice(0, 5)
+          papers: 5 
         })
       });
 
@@ -149,7 +150,19 @@ The research shows a ${certainty}% certainty match with your query, providing va
                 </div>
               ) : (
                 <div className="insight-card">
-                  <p className="insight-text">{insight}</p>
+                  <div className="insight-header">
+                    <div className="insight-meta">
+                      <span className="insight-source">🤖 AI Analysis</span>
+                      <span className="insight-papers">📊 Based on {results.length} papers</span>
+                    </div>
+                  </div>
+                  <div className="insight-content">
+                    {insight.split('\n\n').map((paragraph, index) => (
+                      <p key={index} className="insight-paragraph">
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               )}
             </section>

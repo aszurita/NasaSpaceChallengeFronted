@@ -569,3 +569,30 @@
 .full-content::-webkit-scrollbar-thumb:hover {
   background: rgba(102, 126, 234, 0.7);
 }
+
+/* Insight Card Styles */
+.insight-card {
+  background: rgba(102, 126, 234, 0.05) !important;
+  border: 1px solid rgba(102, 126, 234, 0.2) !important;
+}
+
+.insight-card .card-header {
+  border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+}
+
+.insight-content {
+  line-height: 1.7;
+}
+
+.insight-text {
+  color: #e2e8f0;
+  font-size: 1rem;
+  text-align: justify;
+  margin: 0;
+}
+
+.insight-card .card-icon {
+  font-size: 1.5rem;
+}

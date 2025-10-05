@@ -246,6 +246,49 @@
   margin: 0;
 }
 
+.insight-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.insight-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.insight-source,
+.insight-papers {
+  background: rgba(102, 126, 234, 0.1);
+  color: #b8c5f4;
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.insight-content {
+  line-height: 1.8;
+}
+
+.insight-paragraph {
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  margin: 0 0 1.5rem 0;
+  text-align: justify;
+}
+
+.insight-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.insight-paragraph:first-child {
+  font-weight: 500;
+  color: #f7fafc;
+}
+
 .insight-loading {
   display: flex;
   flex-direction: column;
