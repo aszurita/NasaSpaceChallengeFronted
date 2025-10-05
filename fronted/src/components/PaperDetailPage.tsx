@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { API_URL } from '../config';
-import CytoscapeGraph from './CytoscapeGraph';
 import '../styles/PaperDetailPage.css';
 
 interface PaperDetailPageProps {
@@ -24,57 +23,14 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
   const [chatLoading, setChatLoading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [insights, setInsights] = useState<string[]>([]);
-  const [insightsLoading, setInsightsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchInsights = async () => {
-      if (!safePaper || !safePaper.title) {
-        setInsights([]);
-        return;
-      }
-      setInsightsLoading(true);
-      try {
-        // Use the insights endpoint for better analysis
-        const response = await fetch(`${API_URL}/search/insights`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: safePaper.title,
-            papers: 5
-          })
-        });
-        const data = await response.json();
-        const text: string = data.insight || '';
-        
-        // Split the insight into meaningful paragraphs
-        const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
-        
-        if (paragraphs.length > 0) {
-          // Take the first 3 paragraphs as insights
-          setInsights(paragraphs.slice(0, 3));
-        } else {
-          // Fallback insights based on metadata
-          const fallback: string[] = [];
-          fallback.push(`Certainty Score: ${(safePaper.certainty * 100).toFixed(1)}%`);
-          fallback.push(`Abstract: ${safePaper.abstract?.substring(0, 100)}...`);
-          fallback.push(`Source: ${safePaper.link}`);
-          setInsights(fallback.slice(0,3));
-        }
-      } catch (e) {
-        console.error('Error fetching paper insights:', e);
-        const fallback: string[] = [];
-        fallback.push(`Certainty Score: ${(safePaper.certainty * 100).toFixed(1)}%`);
-        fallback.push(`Abstract: ${safePaper.abstract?.substring(0, 100)}...`);
-        fallback.push(`Source: ${safePaper.link}`);
-        setInsights(fallback.slice(0,3));
-      } finally {
-        setInsightsLoading(false);
-      }
-    };
-    fetchInsights();
+    // Mostrar insights fijos en español sobre microgravedad y células
+    setInsights([
+      "La microgravedad altera fundamentalmente los procesos celulares básicos incluyendo división celular, expresión génica y señalización celular. Estos cambios ocurren debido a la ausencia de fuerzas gravitacionales que normalmente guían la orientación y función celular.",
+      "Las células expuestas a microgravedad experimentan estrés oxidativo aumentado y disfunción mitocondrial, lo que puede llevar a daño en el ADN y envejecimiento celular prematuro. Esto tiene implicaciones directas para la salud de astronautas en misiones espaciales prolongadas.",
+      "Los sistemas de cultivo celular en microgravedad permiten modelar enfermedades humanas de manera más precisa que en gravedad terrestre, ofreciendo nuevas oportunidades para desarrollo de fármacos y terapias regenerativas aplicables en la Tierra."
+    ]);
   }, [safePaper]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -88,7 +44,7 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
 
     try {
       // Construir el query con el título del paper y la pregunta del usuario
-      const query = `I'm going to ask you a question and you need to answer based on the following publication named: ${safePaper.title} or more if necessary. This is my question  ${chatInput}`;
+      const query = `I'm going to ask you a question and you need to answer based on the following publication named: ${safePaper.title} or more if necessary. This is my question: ${chatInput}`;
 
       const response = await fetch(`${API_URL}/ask_paper`, {
         method: 'POST',
@@ -126,47 +82,27 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
         <h1 className="nav-logo">BioSeek</h1>
       </nav>
 
-      <div className="graph-section">
-        <CytoscapeGraph 
-          paperId={safePaper.title ? safePaper.title.length : 0} 
-          paperTitle={safePaper.title}
-        />
-      </div>
-
       <div className="content-section" ref={contentRef}>
         <div className="paper-content">
             <div className="summary-section">
               <h2 className="section-title">Key Insights</h2>
-              {insightsLoading ? (
-                <div className="summary-cards">
-                  <div className="summary-card"><p>Generating insights...</p></div>
-                </div>
-              ) : (
-                <div className="summary-cards">
-                  {insights.map((ins, i) => (
-                    <div key={i} className="summary-card insight-card">
-                      <div className="card-header">
-                        <span className="card-icon">{i === 0 ? '⭐' : i === 1 ? '✨' : '🔎'}</span>
-                        <h3>Insight #{i + 1}</h3>
-                      </div>
-                      <div className="insight-content">
-                        <p className="insight-text">{ins}</p>
-                      </div>
+              <div className="summary-cards">
+                {insights.map((ins, i) => (
+                  <div key={i} className="summary-card insight-card">
+                    <div className="card-header">
+                      <span className="card-icon">{i === 0 ? '⭐' : i === 1 ? '✨' : '🔎'}</span>
+                      <h3>Insight #{i + 1}</h3>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="insight-content">
+                      <p className="insight-text">{ins}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               <h2 className="section-title" style={{ marginTop: '2rem' }}>Paper Summary</h2>
 
               <div className="summary-cards">
-                <div className="summary-card">
-                  <div className="card-header">
-                    <span className="card-icon">📄</span>
-                    <h3>Title</h3>
-                  </div>
-                  <p>{safePaper.title}</p>
-                </div>
 
                 {safePaper.full_abstract ? (
                     <div className="summary-card">
