@@ -63,7 +63,34 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           </div>
         ) : (
           <>
-
+            {/* Insight Section */}
+            <section className="insight-section">
+              <h2 className="section-title">
+                <span className="icon">💡</span> Research Insight
+              </h2>
+              {loading ? (
+                <div className="insight-loading">
+                  <div className="loading-spinner"></div>
+                  <p>Generating insights...</p>
+                </div>
+              ) : (
+                <div className="insight-card">
+                  <div className="insight-header">
+                    <div className="insight-meta">
+                      <span className="insight-source">🤖 AI Analysis</span>
+                      <span className="insight-papers">📊 Based on {results.length} papers</span>
+                    </div>
+                  </div>
+                  <div className="insight-content">
+                    {insight.split('\n\n').map((paragraph, index) => (
+                      <p key={index} className="insight-paragraph">
+                        {processInsightWithReferences(paragraph)}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
 
             {/* Papers Grid */}
             <section className="papers-section">
