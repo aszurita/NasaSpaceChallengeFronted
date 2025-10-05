@@ -534,3 +534,38 @@
     gap: 1rem;
   }
 }
+
+/* Full Content Styles */
+.full-content {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.full-content p {
+  line-height: 1.6;
+  color: #e2e8f0;
+  margin: 0;
+  text-align: justify;
+}
+
+.full-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.full-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.full-content::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+}
+
+.full-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}

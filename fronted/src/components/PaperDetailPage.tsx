@@ -121,7 +121,10 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
       </nav>
 
       <div className="graph-section">
-        <CytoscapeGraph paperId={safePaper.title ? safePaper.title.length : 0} />
+        <CytoscapeGraph 
+          paperId={safePaper.title ? safePaper.title.length : 0} 
+          paperTitle={safePaper.title}
+        />
       </div>
 
       <div className="content-section" ref={contentRef}>
@@ -157,23 +160,23 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
                   <p>{safePaper.title}</p>
                 </div>
 
-                <div className="summary-card">
-                  <div className="card-header">
-                    <span className="card-icon">📝</span>
-                    <h3>Abstract</h3>
-                  </div>
-                  <p>{safePaper.abstract}</p>
-                </div>
-
-                {safePaper.full_abstract && safePaper.full_abstract !== safePaper.abstract && (
-                  <div className="summary-card">
-                    <div className="card-header">
-                      <span className="card-icon">📋</span>
-                      <h3>Full Abstract</h3>
+                {safePaper.full_abstract ? (
+                    <div className="summary-card">
+                      <div className="card-header">
+                        <span className="card-icon">📋</span>
+                        <h3>Full Abstract</h3>
+                      </div>
+                      <p>{safePaper.full_abstract}</p>
                     </div>
-                    <p>{safePaper.full_abstract}</p>
-                  </div>
-                )}
+                  ) : safePaper.abstract ? (
+                    <div className="summary-card">
+                      <div className="card-header">
+                        <span className="card-icon">📝</span>
+                        <h3>Abstract</h3>
+                      </div>
+                      <p>{safePaper.abstract}</p>
+                    </div>
+                  ) : null}
 
                 <div className="summary-card">
                   <div className="card-header">

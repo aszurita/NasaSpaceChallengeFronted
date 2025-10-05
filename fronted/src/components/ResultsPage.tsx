@@ -178,6 +178,12 @@ The research shows a ${certainty}% certainty match with your query, providing va
                         <span className="meta-label">Abstract:</span>
                         <p className="paper-abstract">{paper.abstract}</p>
                       </div>
+                      {paper.content_preview && (
+                        <div className="meta-item">
+                          <span className="meta-label">Content Preview:</span>
+                          <p className="paper-content-preview">{paper.content_preview}</p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="paper-footer">
