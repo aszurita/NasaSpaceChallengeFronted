@@ -15,6 +15,58 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [insights, setInsights] = useState<string[]>([]);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      if (!safePaper || !safePaper.Title) {
+        setInsights([]);
+        return;
+      }
+      setInsightsLoading(true);
+      try {
+        // Reuse the same multi-paper insight endpoint but with a single paper
+        const response = await fetch(`${API_URL}/generate-insight`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: safePaper.Title,
+            papers: [safePaper]
+          })
+        });
+        const data = await response.json();
+        const text: string = data.insight || '';
+        // Derive up to 3 concise insights from the response
+        const items = text
+          .replace(/\n+/g, ' ')
+          .split(/[\.\u2026\!\?]/)
+          .map(s => s.trim())
+          .filter(Boolean)
+          .slice(0, 3);
+        if (items.length > 0) {
+          setInsights(items);
+        } else {
+          // Fallback insights based on metadata
+          const fallback: string[] = [];
+          if (safePaper.topics?.length) fallback.push(`Focus areas: ${safePaper.topics.slice(0,3).join(', ')}`);
+          if (safePaper.organisms?.length) fallback.push(`Organisms studied: ${safePaper.organisms.slice(0,3).join(', ')}`);
+          fallback.push(`Citations: ${safePaper.citations || 0}`);
+          setInsights(fallback.slice(0,3));
+        }
+      } catch (e) {
+        console.error('Error fetching paper insights:', e);
+        const fallback: string[] = [];
+        if (safePaper.topics?.length) fallback.push(`Focus areas: ${safePaper.topics.slice(0,3).join(', ')}`);
+        if (safePaper.organisms?.length) fallback.push(`Organisms studied: ${safePaper.organisms.slice(0,3).join(', ')}`);
+        fallback.push(`Citations: ${safePaper.citations || 0}`);
+        setInsights(fallback.slice(0,3));
+      } finally {
+        setInsightsLoading(false);
+      }
+    };
+    fetchInsights();
+  }, [safePaper]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +119,26 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
       <div className="content-section" ref={contentRef}>
         <div className="paper-content">
             <div className="summary-section">
-              <h2 className="section-title">Paper Summary</h2>
+              <h2 className="section-title">Key Insights</h2>
+              {insightsLoading ? (
+                <div className="summary-cards">
+                  <div className="summary-card"><p>Generating insights...</p></div>
+                </div>
+              ) : (
+                <div className="summary-cards">
+                  {insights.map((ins, i) => (
+                    <div key={i} className="summary-card">
+                      <div className="card-header">
+                        <span className="card-icon">{i === 0 ? '⭐' : i === 1 ? '✨' : '🔎'}</span>
+                        <h3>Insight #{i + 1}</h3>
+                      </div>
+                      <p>{ins}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <h2 className="section-title" style={{ marginTop: '2rem' }}>Paper Summary</h2>
 
               <div className="summary-cards">
                 <div className="summary-card">

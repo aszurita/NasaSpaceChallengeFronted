@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import GraphView from './GraphView';
 import { API_URL } from '../config';
 import '../styles/ResultsPage.css';
 
@@ -121,20 +120,6 @@ The research focuses on ${topics.toLowerCase()}, providing valuable insights int
           </div>
         ) : (
           <>
-            {/* Graph Section */}
-            <section className="graph-section">
-              <h2 className="section-title">
-                <span className="icon">🌐</span> Knowledge Graph
-              </h2>
-              <div className="graph-wrapper">
-                <GraphView papers={results} onSelectPaper={onPaperClick} />
-              </div>
-              <p className="graph-description">
-                Interactive visualization showing connections between papers. 
-                Click on nodes to explore individual papers.
-              </p>
-            </section>
-
             {/* Synopsis Section */}
             {synopsis && (
               <section className="synopsis-section">
