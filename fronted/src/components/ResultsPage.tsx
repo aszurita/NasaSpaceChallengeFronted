@@ -17,21 +17,53 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
 }) => {
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [insight, setInsight] = useState('');
+  const [insightReferences, setInsightReferences] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [synopsis, setSynopsis] = useState('');
+  const [hoveredReference, setHoveredReference] = useState<number | null>(null);
 
   useEffect(() => {
     generateInsight();
     generateSynopsis();
   }, [results]);
 
+  // Handle reference hover events
+  useEffect(() => {
+    const handleReferenceMouseEnter = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target && target.classList && target.classList.contains('insight-reference')) {
+        const refId = parseInt(target.getAttribute('data-ref-id') || '0');
+        if (refId > 0) {
+          setHoveredReference(refId);
+        }
+      }
+    };
+
+    const handleReferenceMouseLeave = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target && target.classList && target.classList.contains('insight-reference')) {
+        setHoveredReference(null);
+      }
+    };
+
+    // Only add listeners if we have references
+    if (insightReferences.length > 0) {
+      document.addEventListener('mouseenter', handleReferenceMouseEnter, true);
+      document.addEventListener('mouseleave', handleReferenceMouseLeave, true);
+    }
+
+    return () => {
+      document.removeEventListener('mouseenter', handleReferenceMouseEnter, true);
+      document.removeEventListener('mouseleave', handleReferenceMouseLeave, true);
+    };
+  }, [insightReferences]);
+
   const generateInsight = async () => {
     if (results.length === 0) return;
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/search/insights
-`, {
+      const response = await fetch(`${API_URL}/search/insights`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -40,11 +72,17 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       setInsight(data.insight || 'Analysis of search results shows significant findings in space biology research.');
+      setInsightReferences(Array.isArray(data.references) ? data.references : []);
     } catch (error) {
       console.error('Error generating insight:', error);
       setInsight('Analyzing the latest research in this field reveals important developments in space biology.');
+      setInsightReferences([]);
     }
     setLoading(false);
   };
@@ -79,6 +117,37 @@ The research shows a ${certainty}% certainty match with your query, providing va
     if (searchInput.trim()) {
       onNewSearch(searchInput);
     }
+  };
+
+  // Process insight text to add interactive references
+  const processInsightWithReferences = (text: string) => {
+    if (!insightReferences.length) return text;
+    
+    // Split text by references and create elements
+    const parts = text.split(/(\[\d+\])/g);
+    
+    return parts.map((part, index) => {
+      const refMatch = part.match(/\[(\d+)\]/);
+      if (refMatch) {
+        const refNumber = parseInt(refMatch[1]);
+        const reference = insightReferences.find(ref => ref.id === refNumber);
+        
+        if (reference) {
+          return (
+            <span 
+              key={index}
+              className="insight-reference" 
+              data-ref-id={refNumber}
+              onMouseEnter={() => setHoveredReference(refNumber)}
+              onMouseLeave={() => setHoveredReference(null)}
+            >
+              [{refNumber}]
+            </span>
+          );
+        }
+      }
+      return part;
+    });
   };
 
   return (
@@ -159,13 +228,65 @@ The research shows a ${certainty}% certainty match with your query, providing va
                   <div className="insight-content">
                     {insight.split('\n\n').map((paragraph, index) => (
                       <p key={index} className="insight-paragraph">
-                        {paragraph}
+                        {processInsightWithReferences(paragraph)}
                       </p>
                     ))}
                   </div>
                 </div>
               )}
             </section>
+
+            {/* References Section */}
+            {insightReferences && insightReferences.length > 0 && (
+              <section className="references-section">
+                <h2 className="section-title">
+                  <span className="icon">📚</span> Referenced Papers
+                </h2>
+                <div className="references-grid">
+                  {insightReferences.map((ref, index) => {
+                    if (!ref || !ref.id) return null;
+                    
+                    return (
+                      <div 
+                        key={ref.id || index}
+                        className={`reference-card ${hoveredReference === ref.id ? 'highlighted' : ''}`}
+                        onMouseEnter={() => setHoveredReference(ref.id)}
+                        onMouseLeave={() => setHoveredReference(null)}
+                        onClick={() => {
+                          // Find the paper in results and navigate to it
+                          const paper = results.find(p => p && p.title === ref.title);
+                          if (paper) onPaperClick(paper);
+                        }}
+                      >
+                        <div className="reference-header">
+                          <div className="reference-number">[{ref.id}]</div>
+                          <div className="reference-certainty">
+                            {ref.certainty ? (ref.certainty * 100).toFixed(1) : '0.0'}%
+                          </div>
+                        </div>
+                        <h4 className="reference-title">{ref.title || 'Untitled Paper'}</h4>
+                        <div className="reference-actions">
+                          {ref.link && (
+                            <a 
+                              href={ref.link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="reference-link"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              📄 View Source
+                            </a>
+                          )}
+                          <span className="reference-action">
+                            👁️ View Details
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             {/* Papers Grid */}
             <section className="papers-section">
