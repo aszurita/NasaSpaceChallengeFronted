@@ -2,6 +2,20 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## API configuration
+
+Las pantallas de búsqueda y detalle consultan los servicios desplegados en Cloud Run.
+
+1. Copia el archivo `.env.example` como `.env` (si no existe, crea uno nuevo) y define la variable `REACT_APP_API_BASE_URL` con la URL base del backend, por ejemplo:
+
+```bash
+REACT_APP_API_BASE_URL=https://nasa2025-backend-164841539788.europe-west1.run.app
+```
+
+2. Reinicia el servidor de desarrollo para que los cambios tomen efecto (`npm start`).
+
+De no definir la variable, la aplicación usará automáticamente la URL anterior como valor por defecto.
+
 ## Available Scripts
 
 In the project directory, you can run:

@@ -3,43 +3,37 @@ import './App.css';
 import HomePage from './components/HomePage';
 import ResultsPage from './components/ResultsPage';
 import PaperDetailPage from './components/PaperDetailPage';
+import { searchDocuments, DocumentHit } from './api/client';
 
 type PageView = 'home' | 'results' | 'paper-detail';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [selectedPaper, setSelectedPaper] = useState<any>(null);
+  const [searchResults, setSearchResults] = useState<DocumentHit[]>([]);
+  const [selectedPaper, setSelectedPaper] = useState<DocumentHit | null>(null);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     setLoading(true);
+    setErrorMessage(null);
 
     try {
-      const response = await fetch('http://localhost:8000/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query,
-          top_n: 20
-        })
-      });
-
-      const data = await response.json();
-      setSearchResults(data.results || []);
+      const results = await searchDocuments(query, { limit: 12, onlyFullContent: true });
+      setSearchResults(results);
       setCurrentPage('results');
     } catch (error) {
       console.error('Search error:', error);
-      // Mock data for development
+      setErrorMessage('No pudimos contactar la API de búsqueda. Intenta nuevamente.');
       setSearchResults([]);
     }
 
     setLoading(false);
   };
 
-  const handlePaperClick = (paper: any) => {
+  const handlePaperClick = (paper: DocumentHit) => {
     setSelectedPaper(paper);
     setCurrentPage('paper-detail');
   };
@@ -47,12 +41,6 @@ function App() {
   const handleBackToResults = () => {
     setCurrentPage('results');
     setSelectedPaper(null);
-  };
-
-  const handleBackToHome = () => {
-    setCurrentPage('home');
-    setSearchQuery('');
-    setSearchResults([]);
   };
 
   return (
@@ -67,6 +55,7 @@ function App() {
           results={searchResults}
           onPaperClick={handlePaperClick}
           onNewSearch={handleSearch}
+          errorMessage={errorMessage}
         />
       )}
 

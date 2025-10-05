@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../styles/HomePage.css';
 
 interface HomePageProps {
-  onSearch: (query: string) => void;
+  onSearch: (query: string) => void | Promise<void>;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ onSearch }) => {

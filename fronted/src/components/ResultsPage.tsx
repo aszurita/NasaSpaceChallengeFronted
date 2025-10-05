@@ -1,55 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/ResultsPage.css';
+import { DocumentHit, generateEditorialTitle } from '../api/client';
 
 interface ResultsPageProps {
   searchQuery: string;
-  results: any[];
-  onPaperClick: (paper: any) => void;
-  onNewSearch: (query: string) => void;
+  results: DocumentHit[];
+  onPaperClick: (paper: DocumentHit) => void;
+  onNewSearch: (query: string) => void | Promise<void>;
+  errorMessage?: string | null;
 }
 
 const ResultsPage: React.FC<ResultsPageProps> = ({
   searchQuery,
   results,
   onPaperClick,
-  onNewSearch
+  onNewSearch,
+  errorMessage = null,
 }) => {
   const [searchInput, setSearchInput] = useState(searchQuery);
-  const [insight, setInsight] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [insight, setInsight] = useState<string | null>(null);
+  const [insightSource, setInsightSource] = useState<string | null>(null);
+  const [loadingInsight, setLoadingInsight] = useState(false);
 
   useEffect(() => {
-    generateInsight();
+    setSearchInput(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchInsight = async () => {
+      if (results.length === 0) {
+        setInsight(null);
+        setInsightSource(null);
+        return;
+      }
+
+      setLoadingInsight(true);
+      try {
+        const baseText = results[0].full_content || results[0].full_abstract || results[0].snippet;
+        const response = await generateEditorialTitle(baseText);
+
+        if (!cancelled) {
+          setInsight(response?.title ?? null);
+          setInsightSource(response?.source ?? null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('Insight generation failed', error);
+          setInsight(null);
+          setInsightSource(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingInsight(false);
+        }
+      }
+    };
+
+    fetchInsight();
+
+    return () => {
+      cancelled = true;
+    };
   }, [results]);
 
-  const generateInsight = async () => {
-    if (results.length === 0) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:8000/generate-insight', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: searchQuery,
-          papers: results.slice(0, 5)
-        })
-      });
-
-      const data = await response.json();
-      setInsight(data.insight || 'Analysis of search results shows significant findings in space biology research.');
-    } catch (error) {
-      console.error('Error generating insight:', error);
-      setInsight('Analyzing the latest research in this field reveals important developments in space biology.');
-    }
-    setLoading(false);
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchInput.trim()) {
-      onNewSearch(searchInput);
+    const nextQuery = searchInput.trim();
+    if (nextQuery.length === 0) {
+      return;
     }
+    await onNewSearch(nextQuery);
   };
 
   return (
@@ -80,20 +102,32 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       <div className="results-content">
         <div className="search-info">
           <p className="search-message">Search made for <span className="query-highlight">"{searchQuery}"</span></p>
+          {errorMessage && <p className="error-message">⚠️ {errorMessage}</p>}
         </div>
 
         <section className="insight-section">
           <h2 className="section-title">
             <span className="icon">💡</span> Research Insight
           </h2>
-          {loading ? (
+          {loadingInsight ? (
             <div className="insight-loading">
               <div className="loading-spinner"></div>
-              <p>Generating insights...</p>
+              <p>Generating insight from the top result...</p>
             </div>
           ) : (
             <div className="insight-card">
-              <p className="insight-text">{insight}</p>
+              {insight ? (
+                <>
+                  <p className="insight-text">{insight}</p>
+                  {insightSource && (
+                    <p className="insight-source">Generated via {insightSource}</p>
+                  )}
+                </>
+              ) : (
+                <p className="insight-placeholder">
+                  We'll highlight the most relevant finding once results are available.
+                </p>
+              )}
             </div>
           )}
         </section>
@@ -103,37 +137,28 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             <span className="icon">📚</span> Related Papers ({results.length})
           </h2>
           <div className="papers-grid">
-            {results.map((paper, index) => (
+            {results.map((paper) => (
               <div
-                key={index}
+                key={paper.id}
                 className="paper-card"
                 onClick={() => onPaperClick(paper)}
               >
                 <div className="paper-header">
-                  <h3 className="paper-title">{paper.Title}</h3>
+                  <h3 className="paper-title">{paper.title}</h3>
                   <div className="paper-score">
-                    {paper.relevance_score ? `${paper.relevance_score}/10` : '—'}
+                    {paper.certaintyScore !== null ? `${paper.certaintyScore}%` : '—'}
                   </div>
                 </div>
 
-                <div className="paper-meta">
-                  {paper.topics && paper.topics.length > 0 && (
-                    <div className="meta-item">
-                      <span className="meta-label">Topics:</span>
-                      <div className="tags">
-                        {paper.topics.slice(0, 3).map((topic: string, i: number) => (
-                          <span key={i} className="tag tag-topic">{topic}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                <p className="paper-snippet">{paper.snippet}</p>
 
-                  {paper.organisms && paper.organisms.length > 0 && (
+                <div className="paper-meta">
+                  {paper.keywords.length > 0 && (
                     <div className="meta-item">
-                      <span className="meta-label">Organisms:</span>
+                      <span className="meta-label">Key concepts:</span>
                       <div className="tags">
-                        {paper.organisms.slice(0, 3).map((org: string, i: number) => (
-                          <span key={i} className="tag tag-organism">{org}</span>
+                        {paper.keywords.slice(0, 3).map((keyword) => (
+                          <span key={keyword} className="tag tag-topic">{keyword}</span>
                         ))}
                       </div>
                     </div>
@@ -141,7 +166,9 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                 </div>
 
                 <div className="paper-footer">
-                  <span className="citations">📊 {paper.citations || 0} citations</span>
+                  {paper.sourceHost && (
+                    <span className="citations">� {paper.sourceHost}</span>
+                  )}
                   <span className="view-more">View Details →</span>
                 </div>
               </div>

@@ -1,95 +1,63 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState } from 'react';
 import '../styles/PaperDetailPage.css';
+import { DocumentHit } from '../api/client';
 
 interface PaperDetailPageProps {
-  paper: any;
+  paper: DocumentHit;
   onBack: () => void;
 }
 
+const CHARACTER_LIMIT = 1800;
+
 const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
-  // Fallback for missing paper
-  const safePaper = paper || { Title: '', topics: [], organisms: [], citations: 0, Link: '', relevance_score: 0 };
-  const [graphBuilding, setGraphBuilding] = useState(true);
-  const [nodes, setNodes] = useState<any[]>([]);
-  const [chatMessages, setChatMessages] = useState<any[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [showFullContent, setShowFullContent] = useState(false);
 
-  useEffect(() => {
-    // Simulate graph building animation
-    buildKnowledgeGraph();
-  }, [safePaper]);
+  const keywordList = useMemo(
+    () => (paper.keywords.length > 0 ? paper.keywords.slice(0, 8) : []),
+    [paper]
+  );
 
-  const buildKnowledgeGraph = () => {
-    setGraphBuilding(true);
+  const previewText = useMemo(() => {
+    const basePreview = paper.content_preview || paper.snippet;
+    if (!basePreview) {
+      return 'Preview not available for this document.';
+    }
+    return basePreview.length > 280 ? `${basePreview.slice(0, 277)}…` : basePreview;
+  }, [paper]);
 
-    // Simulate nodes appearing one by one
-    const allNodes = [
-      { id: 'paper', label: safePaper.Title, type: 'main' },
-      ...(safePaper.topics || []).slice(0, 4).map((topic: string, i: number) => ({
-        id: `topic-${i}`,
-        label: topic,
-        type: 'topic'
-      })),
-      ...(safePaper.organisms || []).slice(0, 3).map((org: string, i: number) => ({
-        id: `org-${i}`,
-        label: org,
-        type: 'organism'
-      }))
-    ];
+  const abstractParagraphs = useMemo(
+    () => (paper.full_abstract || paper.snippet).split(/\n+/).filter(Boolean),
+    [paper]
+  );
 
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      if (currentIndex < allNodes.length) {
-        setNodes(prev => [...prev, allNodes[currentIndex]]);
-        currentIndex++;
-      } else {
-        clearInterval(interval);
-        setTimeout(() => {
-          setGraphBuilding(false);
-          // Auto scroll to content
-          setTimeout(() => {
-            contentRef.current?.scrollIntoView({ behavior: 'smooth' });
-          }, 500);
-        }, 1000);
-      }
-    }, 400);
+  const contentParagraphs = useMemo(() => {
+    const paragraphs = (paper.full_content || paper.full_abstract || paper.snippet)
+      .split(/\n+/)
+      .map((section) => section.trim())
+      .filter(Boolean);
 
-    return () => clearInterval(interval);
-  };
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-
-    const userMessage = { role: 'user', content: chatInput };
-    setChatMessages(prev => [...prev, userMessage]);
-    setChatInput('');
-    setChatLoading(true);
-
-    try {
-      const response = await fetch('http://localhost:8000/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: chatInput,
-          context_papers: [paper]
-        })
-      });
-
-      const data = await response.json();
-      setChatMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-    } catch (error) {
-      console.error('Chat error:', error);
-      setChatMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'I apologize, but I encountered an error. Please try again.'
-      }]);
+    if (showFullContent) {
+      return paragraphs;
     }
 
-    setChatLoading(false);
-  };
+    const truncated: string[] = [];
+    let total = 0;
+    for (const paragraph of paragraphs) {
+      if (total + paragraph.length > CHARACTER_LIMIT) {
+        truncated.push(`${paragraph.slice(0, CHARACTER_LIMIT - total)}…`);
+        break;
+      }
+      truncated.push(paragraph);
+      total += paragraph.length;
+    }
+
+    return truncated;
+  }, [paper, showFullContent]);
+
+  const hasMoreContent = useMemo(() => {
+    const contentLength = (paper.full_content || '').length;
+    return contentLength > CHARACTER_LIMIT;
+  }, [paper]);
 
   return (
     <div className="paper-detail-page">
@@ -104,205 +72,148 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
       </nav>
 
       <div className="graph-section">
-        <h2 className="graph-title">
-          {graphBuilding ? 'Building Knowledge Graph...' : 'Knowledge Graph Complete'}
-        </h2>
+        <h2 className="graph-title">Concepts in Orbit</h2>
 
         <div className="knowledge-graph">
-          <svg className="graph-svg" viewBox="0 0 800 400">
-            {/* Draw connections */}
-            {nodes.map((node, index) => {
-              if (node.type !== 'main') {
-                const angle = (index / (nodes.length - 1)) * Math.PI * 2;
-                const x1 = 400;
-                const y1 = 200;
-                const x2 = 400 + Math.cos(angle) * 150;
-                const y2 = 200 + Math.sin(angle) * 120;
-
-                return (
-                  <line
-                    key={`line-${node.id}`}
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    className="graph-edge"
-                  />
-                );
-              }
-              return null;
-            })}
-
-            {/* Draw nodes */}
-            {nodes.map((node, index) => {
-              let x, y;
-              if (node.type === 'main') {
-                x = 400;
-                y = 200;
-              } else {
-                const angle = (index / (nodes.length - 1)) * Math.PI * 2;
-                x = 400 + Math.cos(angle) * 150;
-                y = 200 + Math.sin(angle) * 120;
-              }
-
-              return (
-                <g key={node.id} className={`graph-node node-${node.type}`}>
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r={node.type === 'main' ? 40 : 25}
-                    className={`node-circle node-${node.type}`}
-                  />
-                  <text
-                    x={x}
-                    y={y + (node.type === 'main' ? 60 : 45)}
-                    className="node-label"
-                    textAnchor="middle"
-                  >
-                    {node.label.length > 20 ? node.label.substring(0, 20) + '...' : node.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
+          <div className="keyword-cloud">
+            {keywordList.length === 0 ? (
+              <p className="keyword-placeholder">No keywords detected for this document.</p>
+            ) : (
+              keywordList.map((keyword) => (
+                <span key={keyword} className="keyword-chip">#{keyword}</span>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="content-section" ref={contentRef}>
+      <div className="content-section">
         <div className="paper-content">
-            <div className="summary-section">
-              <h2 className="section-title">Paper Summary</h2>
+          <div className="summary-section">
+            <h2 className="section-title">Paper Summary</h2>
 
-              <div className="summary-cards">
-                <div className="summary-card">
-                  <div className="card-header">
-                    <span className="card-icon">📄</span>
-                    <h3>Title</h3>
-                  </div>
-                  <p>{safePaper.Title}</p>
+            <div className="summary-cards">
+              <div className="summary-card">
+                <div className="card-header">
+                  <span className="card-icon">📄</span>
+                  <h3>Title</h3>
                 </div>
+                <p>{paper.title}</p>
+              </div>
 
-                {safePaper.topics && safePaper.topics.length > 0 && (
-                  <div className="summary-card">
-                    <div className="card-header">
-                      <span className="card-icon">🏷️</span>
-                      <h3>Research Topics</h3>
-                    </div>
-                    <div className="tags-container">
-                      {safePaper.topics.map((topic: string, i: number) => (
-                        <span key={i} className="tag">{topic}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              <div className="summary-card">
+                <div className="card-header">
+                  <span className="card-icon">🛰️</span>
+                  <h3>Source</h3>
+                </div>
+                <p>{paper.sourceHost ?? 'External source not specified'}</p>
+              </div>
 
-                {safePaper.organisms && safePaper.organisms.length > 0 && (
-                  <div className="summary-card">
-                    <div className="card-header">
-                      <span className="card-icon">🧬</span>
-                      <h3>Organisms Studied</h3>
-                    </div>
-                    <div className="tags-container">
-                      {safePaper.organisms.map((org: string, i: number) => (
-                        <span key={i} className="tag tag-organism">{org}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="summary-card">
-                  <div className="card-header">
-                    <span className="card-icon">📊</span>
-                    <h3>Impact</h3>
-                  </div>
-                  <div className="impact-stats">
-                    <div className="stat">
-                      <span className="stat-label">Citations</span>
-                      <span className="stat-value">{safePaper.citations || 0}</span>
-                    </div>
-                    {safePaper.relevance_score && (
-                      <div className="stat">
-                        <span className="stat-label">Relevance</span>
-                        <span className="stat-value">{safePaper.relevance_score}/10</span>
-                      </div>
-                    )}
+              <div className="summary-card">
+                <div className="card-header">
+                  <span className="card-icon">🎯</span>
+                  <h3>Confidence</h3>
+                </div>
+                <div className="impact-stats">
+                  <div className="stat">
+                    <span className="stat-label">Relevance</span>
+                    <span className="stat-value">
+                      {paper.certaintyScore !== null ? `${paper.certaintyScore}%` : '—'}
+                    </span>
                   </div>
                 </div>
               </div>
 
+              {keywordList.length > 0 && (
+                <div className="summary-card">
+                  <div className="card-header">
+                    <span className="card-icon">🏷️</span>
+                    <h3>Key Concepts</h3>
+                  </div>
+                  <div className="tags-container">
+                    {keywordList.map((keyword) => (
+                      <span key={keyword} className="tag">{keyword}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {paper.link && (
               <a
-                href={safePaper.Link}
+                href={paper.link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="view-original-button"
               >
                 <span>📄</span> View Paper on Original Site
               </a>
+            )}
+
+            <div className="summary-card">
+              <div className="card-header">
+                <span className="card-icon">🧾</span>
+                <h3>Abstract</h3>
+              </div>
+              {abstractParagraphs.map((paragraph, index) => (
+                <p key={`abstract-${index}`}>{paragraph}</p>
+              ))}
             </div>
+
+            <div className="summary-card">
+              <div className="card-header">
+                <span className="card-icon">📚</span>
+                <h3>Full Content</h3>
+              </div>
+              <div className="full-content">
+                {contentParagraphs.map((paragraph, index) => (
+                  <p key={`content-${index}`}>{paragraph}</p>
+                ))}
+              </div>
+              {hasMoreContent && (
+                <button
+                  type="button"
+                  className="view-original-button"
+                  onClick={() => setShowFullContent((prev) => !prev)}
+                >
+                  {showFullContent ? 'Show less content' : 'Show complete content'}
+                </button>
+              )}
+            </div>
+          </div>
 
           <div className="chat-section">
             <div className="chat-container">
               <div className="chat-header">
-                <h3>💬 Ask Questions</h3>
-                <p>Chat about this paper</p>
+                <h3>Document Facts</h3>
+                <p>Useful metadata extracted from the API</p>
               </div>
 
               <div className="chat-messages">
-                {chatMessages.length === 0 ? (
-                  <div className="chat-empty">
-                    <p>👋 Ask me anything about this paper!</p>
-                    <div className="suggested-questions">
-                      <button
-                        className="suggestion"
-                        onClick={() => setChatInput("What are the main findings?")}
-                      >
-                        What are the main findings?
-                      </button>
-                      <button
-                        className="suggestion"
-                        onClick={() => setChatInput("What methods were used?")}
-                      >
-                        What methods were used?
-                      </button>
-                      <button
-                        className="suggestion"
-                        onClick={() => setChatInput("What are the implications?")}
-                      >
-                        What are the implications?
-                      </button>
-                    </div>
+                <div className="chat-message assistant">
+                  <div className="message-content">
+                    <p><strong>Primary link:</strong> {paper.link ? <a href={paper.link} target="_blank" rel="noopener noreferrer">{paper.link}</a> : 'Not available'}</p>
+                    <p><strong>Preview:</strong> {previewText}</p>
+                    <p><strong>Abstract length:</strong> {paper.full_abstract.length.toLocaleString()} characters</p>
+                    <p><strong>Content length:</strong> {paper.full_content.length.toLocaleString()} characters</p>
                   </div>
-                ) : (
-                  chatMessages.map((msg, index) => (
-                    <div key={index} className={`chat-message ${msg.role}`}>
-                      <div className="message-content">{msg.content}</div>
-                    </div>
-                  ))
-                )}
-                {chatLoading && (
-                  <div className="chat-message assistant">
-                    <div className="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
 
-              <form className="chat-input-form" onSubmit={handleSendMessage}>
-                <input
-                  type="text"
-                  className="chat-input"
-                  placeholder="Ask a question..."
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  disabled={chatLoading}
-                />
-                <button type="submit" className="chat-send" disabled={chatLoading}>
-                  Send
-                </button>
-              </form>
+                <div className="chat-message assistant">
+                  <div className="message-content">
+                    <p><strong>Keywords:</strong></p>
+                    <div className="tags-container">
+                      {keywordList.length > 0 ? (
+                        keywordList.map((keyword) => (
+                          <span key={`detail-${keyword}`} className="tag">{keyword}</span>
+                        ))
+                      ) : (
+                        <span className="tag">No keywords detected</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
