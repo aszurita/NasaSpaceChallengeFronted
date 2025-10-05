@@ -23,6 +23,8 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
   const [chatLoading, setChatLoading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [insights, setInsights] = useState<string[]>([]);
+  const [graphData, setGraphData] = useState<any>(null);
+  const [graphLoading, setGraphLoading] = useState(false);
 
   useEffect(() => {
     // Mostrar insights fijos en español sobre microgravedad y células
@@ -31,7 +33,33 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
       "Cells exposed to microgravity experience increased oxidative stress and mitochondrial dysfunction, which can lead to DNA damage and premature cellular aging. This has direct implications for astronaut health during extended space missions.",
       "Cell culture systems in microgravity allow for more accurate modeling of human diseases than on Earth, offering new opportunities for drug development and regenerative therapies applicable on Earth."
     ]);
+
+    // Cargar el grafo del paper
+    if (safePaper.link) {
+      fetchPaperGraph();
+    }
   }, [safePaper]);
+
+  const fetchPaperGraph = async () => {
+    setGraphLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/paper_graph`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          link: safePaper.link
+        })
+      });
+      const data = await response.json();
+      setGraphData(data);
+    } catch (error) {
+      console.error('Error fetching paper graph:', error);
+    }
+    setGraphLoading(false);
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +112,109 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
 
       <div className="content-section" ref={contentRef}>
         <div className="paper-content">
+            {/* Graph Visualization Section */}
+            <div className="graph-section">
+              <h2 className="section-title">Knowledge Graph</h2>
+              <div className="graph-container">
+                {graphLoading ? (
+                  <div className="graph-loading">
+                    <div className="loading-spinner"></div>
+                    <p>Loading knowledge graph...</p>
+                  </div>
+                ) : graphData ? (
+                  <div className="graph-visualization">
+                    <svg width="100%" height="600" viewBox="0 0 1200 600">
+                      {/* Render edges first */}
+                      {Array.isArray(graphData.edges) && graphData.edges.map((edge: any, i: number) => {
+                        const sourceNode = Object.values(graphData.nodes._entity_dict).find(
+                          (n: any) => n.id === edge.source
+                        ) as any;
+                        const targetNode = Object.values(graphData.nodes._entity_dict).find(
+                          (n: any) => n.id === edge.target
+                        ) as any;
+
+                        if (!sourceNode || !targetNode) return null;
+
+                        // Simple positioning based on index
+                        const allNodes = Object.values(graphData.nodes._entity_dict);
+                        const sourceIndex = allNodes.indexOf(sourceNode);
+                        const targetIndex = allNodes.indexOf(targetNode);
+                        const nodeCount = Math.min(allNodes.length, 50); // Limit for performance
+
+                        const angle1 = (sourceIndex / nodeCount) * 2 * Math.PI;
+                        const angle2 = (targetIndex / nodeCount) * 2 * Math.PI;
+                        const radius = 250;
+
+                        const x1 = 600 + radius * Math.cos(angle1);
+                        const y1 = 300 + radius * Math.sin(angle1);
+                        const x2 = 600 + radius * Math.cos(angle2);
+                        const y2 = 300 + radius * Math.sin(angle2);
+
+                        return (
+                          <line
+                            key={`edge-${i}`}
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke="rgba(139, 92, 246, 0.3)"
+                            strokeWidth="1"
+                          />
+                        );
+                      })}
+
+                      {/* Render nodes */}
+                      {Object.values(graphData.nodes._entity_dict).slice(0, 50).map((node: any, i: number) => {
+                        const nodeCount = Math.min(Object.values(graphData.nodes._entity_dict).length, 50);
+                        const angle = (i / nodeCount) * 2 * Math.PI;
+                        const radius = 250;
+                        const x = 600 + radius * Math.cos(angle);
+                        const y = 300 + radius * Math.sin(angle);
+
+                        return (
+                          <g key={`node-${i}`}>
+                            <circle
+                              cx={x}
+                              cy={y}
+                              r="8"
+                              fill="#8b5cf6"
+                              stroke="#fff"
+                              strokeWidth="2"
+                              className="graph-node"
+                            />
+                            <text
+                              x={x}
+                              y={y - 15}
+                              textAnchor="middle"
+                              fontSize="10"
+                              fill="#e0e0e0"
+                              className="graph-label"
+                            >
+                              {node.id?.substring(0, 20)}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+                    <div className="graph-stats">
+                      <div className="stat">
+                        <span className="stat-label">Nodes</span>
+                        <span className="stat-value">{Object.keys(graphData.nodes._entity_dict).length}</span>
+                      </div>
+                      <div className="stat">
+                        <span className="stat-label">Connections</span>
+                        <span className="stat-value">{graphData.edges?.length || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="graph-placeholder">
+                    <p>📊 No graph data available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="summary-section">
               <h2 className="section-title">Key Insights</h2>
               <div className="summary-cards">
