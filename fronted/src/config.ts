@@ -1,2 +1,2 @@
 // API Configuration
-export const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+export const API_URL = "https://nasa2025-backend-164841539788.europe-west1.run.app";
