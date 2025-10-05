@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { API_URL } from '../config';
+import React, { useState } from 'react';
 import '../styles/ResultsPage.css';
 
 interface ResultsPageProps {
@@ -16,155 +15,13 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
   onNewSearch
 }) => {
   const [searchInput, setSearchInput] = useState(searchQuery);
-  const [insight, setInsight] = useState('');
-  const [insightReferences, setInsightReferences] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [synopsis, setSynopsis] = useState('');
-  const [hoveredReference, setHoveredReference] = useState<number | null>(null);
 
-  useEffect(() => {
-    generateInsight();
-    generateSynopsis();
-  }, [results]);
-
-  // Handle reference hover events
-  useEffect(() => {
-    const handleReferenceMouseEnter = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target && target.classList && target.classList.contains('insight-reference')) {
-        const refId = parseInt(target.getAttribute('data-ref-id') || '0');
-        if (refId > 0) {
-          setHoveredReference(refId);
-        }
-      }
-    };
-
-    const handleReferenceMouseLeave = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target && target.classList && target.classList.contains('insight-reference')) {
-        setHoveredReference(null);
-      }
-    };
-
-    // Only add listeners if we have references
-    if (insightReferences.length > 0) {
-      document.addEventListener('mouseenter', handleReferenceMouseEnter, true);
-      document.addEventListener('mouseleave', handleReferenceMouseLeave, true);
-    }
-
-    return () => {
-      document.removeEventListener('mouseenter', handleReferenceMouseEnter, true);
-      document.removeEventListener('mouseleave', handleReferenceMouseLeave, true);
-    };
-  }, [insightReferences]);
-
-  const generateInsight = async () => {
-    if (results.length === 0) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/search/insights`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: searchQuery,
-          papers: 5 
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setInsight(data.insight || 'Analysis of search results shows significant findings in space biology research.');
-      setInsightReferences(Array.isArray(data.references) ? data.references : []);
-    } catch (error) {
-      console.error('Error generating insight:', error);
-      setInsight('Analyzing the latest research in this field reveals important developments in space biology.');
-      setInsightReferences([]);
-    }
-    setLoading(false);
-  };
-
-  const generateSynopsis = () => {
-    if (results.length === 0) {
-      setSynopsis('');
-      return;
-    }
-
-    const topPaper = results[0];
-    const certainty = (topPaper.certainty * 100).toFixed(1);
-    
-    const synopsisText = `
-**Top Result:** ${topPaper.title}
-
-**Abstract:** ${topPaper.abstract}
-
-**Certainty Score:** ${certainty}%
-
-**Source:** ${topPaper.link}
-
-This paper represents one of the most relevant findings for your search "${searchQuery}". 
-The research shows a ${certainty}% certainty match with your query, providing valuable insights into space biology and its applications.
-    `.trim();
-
-    setSynopsis(synopsisText);
-  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchInput.trim()) {
       onNewSearch(searchInput);
     }
-  };
-
-  // Process insight text to add interactive references
-  const processInsightWithReferences = (text: string) => {
-    if (!insightReferences.length) return text;
-
-    // Split text by references and create elements
-    const parts = text.split(/(\[\d+\])/g);
-
-    return parts.map((part, index) => {
-      const refMatch = part.match(/\[(\d+)\]/);
-      if (refMatch) {
-        const refNumber = parseInt(refMatch[1]);
-        const reference = insightReferences.find(ref => ref.id === refNumber);
-
-        if (reference) {
-          return (
-            <span
-              key={index}
-              className="insight-reference"
-              data-ref-id={refNumber}
-              onMouseEnter={() => setHoveredReference(refNumber)}
-              onMouseLeave={() => setHoveredReference(null)}
-              onClick={() => {
-                // Find the paper in results and scroll to it
-                const paper = results.find(p => p && p.title === reference.title);
-                if (paper) {
-                  const paperIndex = results.indexOf(paper);
-                  const paperElement = document.querySelector(`[data-paper-index="${paperIndex}"]`);
-                  if (paperElement) {
-                    paperElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // Add temporary highlight
-                    paperElement.classList.add('highlight-flash');
-                    setTimeout(() => {
-                      paperElement.classList.remove('highlight-flash');
-                    }, 2000);
-                  }
-                }
-              }}
-              style={{ cursor: 'pointer' }}
-            >
-              [{refNumber}]
-            </span>
-          );
-        }
-      }
-      return part;
-    });
   };
 
   return (
