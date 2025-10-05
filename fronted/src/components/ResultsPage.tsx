@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../config';
 import '../styles/ResultsPage.css';
@@ -30,23 +31,29 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
 
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/search/insights
-`, {
+      // Add timeout to avoid hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s
+
+      const response = await fetch(`${API_URL}/generate-insight`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: searchQuery,
           papers: 5 
-        })
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
       setInsight(data.insight || 'Analysis of search results shows significant findings in space biology research.');
     } catch (error) {
       console.error('Error generating insight:', error);
       setInsight('Analyzing the latest research in this field reveals important developments in space biology.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const generateSynopsis = () => {
@@ -120,24 +127,7 @@ The research shows a ${certainty}% certainty match with your query, providing va
           </div>
         ) : (
           <>
-            {/* Synopsis Section */}
-            {synopsis && (
-              <section className="synopsis-section">
-                <h2 className="section-title">
-                  <span className="icon">📄</span> Top Result Synopsis
-                </h2>
-                <div className="synopsis-card">
-                  <pre className="synopsis-text">{synopsis}</pre>
-                  <button 
-                    className="view-paper-btn"
-                    onClick={() => onPaperClick(results[0])}
-                  >
-                    View Full Paper Details →
-                  </button>
-                </div>
-              </section>
-            )}
-
+           
             {/* Insight Section */}
             <section className="insight-section">
               <h2 className="section-title">

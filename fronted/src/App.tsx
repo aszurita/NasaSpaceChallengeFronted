@@ -22,15 +22,21 @@ function App() {
       console.log('Searching for:', query);
       console.log('API URL:', API_URL);
       
+      // Add timeout to avoid hanging on loading overlay
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
       const response = await fetch(`${API_URL}/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: query,
           papers: 20 // Send top 20 papers for context
-        })
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       console.log('Response status:', response.status);
       
       if (!response.ok) {
@@ -45,7 +51,7 @@ function App() {
       setCurrentPage('results');
     } catch (error) {
       console.error('Search error:', error);
-      alert(`Error searching: ${error}. Please check if the backend is running on port 8000.`);
+      alert(`Error searching: ${String(error)}. Please verify the API is reachable at ${API_URL}.`);
       setSearchResults([]);
     } finally {
       setLoading(false);

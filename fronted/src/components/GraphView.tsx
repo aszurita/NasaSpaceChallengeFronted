@@ -6,27 +6,48 @@ import './GraphView.css';
 interface GraphViewProps {
   papers: any[];
   onSelectPaper: (paper: any) => void;
+  paperTitle?: string; // título del paper seleccionado para centrar el grafo
 }
 
-const GraphView: React.FC<GraphViewProps> = ({ papers, onSelectPaper }) => {
+const GraphView: React.FC<GraphViewProps> = ({ papers, onSelectPaper, paperTitle }) => {
   const [graphData, setGraphData] = useState<any>({ nodes: [], links: [] });
   const fgRef = useRef<any>(null);
 
   useEffect(() => {
     fetchGraphData();
-  }, [papers]);
+  }, [papers, paperTitle]);
 
   const fetchGraphData = async () => {
     try {
+      // Si hay un título de paper seleccionado, usamos el nuevo endpoint (POST) para recuperar su subgrafo
+      if (paperTitle && paperTitle.trim().length > 0) {
+        const graphQuery = `MATCH (p:Paper)-[r]-(n) WHERE p.title CONTAINS "${paperTitle}" RETURN p, r, n LIMIT 50`;
+        const response = await fetch(`${API_URL}/graph`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: graphQuery, limit: 100 })
+        });
+        const neo4jData = await response.json();
+        const converted = convertNeo4jToForceGraph(neo4jData);
+        setGraphData(converted);
+        return;
+      }
+
+      // Fallback: cargar el grafo completo (si el backend soporta GET /graph con formato nodes/links)
       const response = await fetch(`${API_URL}/graph`);
-      const data = await response.json();
-      
-      // Si hay papers filtrados, mostrar solo esos
+      const raw = await response.json();
+
+      // Detectar formato y convertir si es necesario
+      const isNeo4jFormat = !!raw.nodes?.[0]?.labels || !!raw.relationships;
+      const data = isNeo4jFormat ? convertNeo4jToForceGraph(raw) : raw;
+
+      // Si hay filtros por lista de papers (por id), aplicarlos sobre el formato final nodes/links
       if (papers.length > 0) {
-        const paperIds = new Set(papers.map(p => p.id));
-        const filteredNodes = data.nodes.filter((n: any) => paperIds.has(n.id));
+        const paperIds = new Set(papers.map(p => p.id?.toString?.() ?? p.id));
+        const filteredNodes = data.nodes.filter((n: any) => paperIds.has(n.id?.toString?.() ?? n.id));
+        const nodeIdSet = new Set(filteredNodes.map((n: any) => n.id?.toString?.() ?? n.id));
         const filteredLinks = data.links.filter((l: any) => 
-          paperIds.has(l.source) && paperIds.has(l.target)
+          nodeIdSet.has(l.source?.toString?.() ?? l.source) && nodeIdSet.has(l.target?.toString?.() ?? l.target)
         );
         setGraphData({ nodes: filteredNodes, links: filteredLinks });
       } else {
@@ -54,8 +75,16 @@ const GraphView: React.FC<GraphViewProps> = ({ papers, onSelectPaper }) => {
         graphData={graphData}
         nodeLabel="title"
         nodeAutoColorBy="community"
-        nodeVal={(node: any) => node.citations / 10}
-        linkWidth={(link: any) => link.weight * 2}
+        nodeVal={(node: any) => {
+          const raw = Number(node.citations ?? node.size ?? 10);
+          const val = isNaN(raw) ? 10 : raw;
+          return Math.max(2, val / 10);
+        }}
+        linkWidth={(link: any) => {
+          const raw = Number(link.weight ?? 1);
+          const val = isNaN(raw) ? 1 : raw;
+          return Math.max(0.5, val * 2);
+        }}
         linkColor={() => 'rgba(255,255,255,0.2)'}
         onNodeClick={handleNodeClick}
         nodeCanvasObject={(node: any, ctx, globalScale) => {
@@ -66,7 +95,9 @@ const GraphView: React.FC<GraphViewProps> = ({ papers, onSelectPaper }) => {
           // Node circle
           ctx.fillStyle = node.color || '#4CAF50';
           ctx.beginPath();
-          ctx.arc(node.x, node.y, node.citations / 10, 0, 2 * Math.PI);
+          const raw = Number(node.citations ?? node.size ?? 10);
+          const radius = Math.max(2, (isNaN(raw) ? 10 : raw) / 10);
+          ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
           ctx.fill();
           
           // Label (only if zoomed)
@@ -91,5 +122,30 @@ const GraphView: React.FC<GraphViewProps> = ({ papers, onSelectPaper }) => {
     </div>
   );
 };
+
+// Convierte la respuesta Neo4j (nodes/relationships) a formato nodes/links para react-force-graph
+function convertNeo4jToForceGraph(neo4jData: any) {
+  const nodes = (neo4jData.nodes || []).map((n: any) => {
+    const id = n.id?.toString?.() ?? n.id;
+    const title = n.properties?.title || n.properties?.name || `Node ${id}`;
+    const community = n.labels?.[0] || 'Unknown';
+    const citations = n.properties?.citations ?? 10;
+    return {
+      id,
+      title,
+      community,
+      citations,
+      color: undefined
+    };
+  });
+
+  const links = (neo4jData.relationships || []).map((r: any) => ({
+    source: r.start_node?.toString?.() ?? r.start_node,
+    target: r.end_node?.toString?.() ?? r.end_node,
+    weight: r.properties?.weight ?? 1
+  }));
+
+  return { nodes, links };
+}
 
 export default GraphView;
