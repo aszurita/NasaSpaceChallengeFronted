@@ -87,20 +87,22 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
     setChatLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/chat`, {
+      // Construir el query con el título del paper y la pregunta del usuario
+      const query = `I'm going to ask you a question and you need to answer based on the following publication named: ${safePaper.title} or more if necessary. This is my question  ${chatInput}`;
+
+      const response = await fetch(`${API_URL}/ask_paper`, {
         method: 'POST',
         mode: 'cors',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: chatInput,
-          context_papers: [paper]
+          query: query
         })
       });
 
       const data = await response.json();
-      setChatMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.answer }]);
     } catch (error) {
       console.error('Chat error:', error);
       setChatMessages(prev => [...prev, {

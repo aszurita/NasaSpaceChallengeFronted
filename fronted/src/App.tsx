@@ -30,7 +30,7 @@ function App() {
         },
         body: JSON.stringify({
           query: query,
-          papers: 20 // Send top 20 papers for context
+          papers: 5 // Send top 20 papers for context
         })
       });
 
