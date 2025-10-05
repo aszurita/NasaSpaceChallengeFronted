@@ -115,7 +115,7 @@ const PaperDetailPage: React.FC<PaperDetailPageProps> = ({ paper, onBack }) => {
         <button className="back-button" onClick={onBack}>
           ← Back to Results
         </button>
-        <h1 className="nav-logo">Spaceper</h1>
+        <h1 className="nav-logo">BioSeek</h1>
       </nav>
 
       <div className="graph-section">

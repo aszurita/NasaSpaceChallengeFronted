@@ -46,7 +46,7 @@ const HomePage: React.FC<HomePageProps> = ({ onSearch }) => {
       <div className="home-content">
         <div className="welcome-section">
           <h1 className="main-title">
-            <span className="gradient-text">Welcome to Spaceper</span>
+            <span className="gradient-text">Welcome to BioSeek</span>
           </h1>
           <p className="subtitle">Your Gateway to Space Biology Knowledge</p>
         </div>
@@ -90,15 +90,128 @@ const HomePage: React.FC<HomePageProps> = ({ onSearch }) => {
         </div>
 
         <div className="animation-section">
-          <div className="planet-container">
-            <div className="planet">
-              <div className="crater crater-1"></div>
-              <div className="crater crater-2"></div>
-              <div className="crater crater-3"></div>
-              <div className="crater crater-4"></div>
-            </div>
-            <div className="orbit">
-              <div className="satellite"></div>
+          <div className="graph-network-container">
+            <svg className="network-graph" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="nasa-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{stopColor: '#667eea', stopOpacity: 1}} />
+                  <stop offset="100%" style={{stopColor: '#764ba2', stopOpacity: 1}} />
+                </linearGradient>
+                <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style={{stopColor: '#667eea', stopOpacity: 0.8}} />
+                  <stop offset="50%" style={{stopColor: '#f093fb', stopOpacity: 0.8}} />
+                  <stop offset="100%" style={{stopColor: '#667eea', stopOpacity: 0.8}} />
+                </linearGradient>
+              </defs>
+              {/* Central Node - NASA Logo Style */}
+              <circle className="central-node" cx="200" cy="200" r="30" />
+              <text className="node-label central-label" x="200" y="208" textAnchor="middle">NASA</text>
+
+              {/* Inner Circle Research Nodes */}
+              <circle className="research-node node-1" cx="200" cy="80" r="18" />
+              <text className="node-label" x="200" y="60" textAnchor="middle">Space Biology</text>
+
+              <circle className="research-node node-2" cx="310" cy="130" r="18" />
+              <text className="node-label" x="340" y="125" textAnchor="middle">Astrobiology</text>
+
+              <circle className="research-node node-3" cx="340" cy="240" r="18" />
+              <text className="node-label" x="375" y="245" textAnchor="middle">Microgravity</text>
+
+              <circle className="research-node node-4" cx="260" cy="330" r="18" />
+              <text className="node-label" x="260" y="360" textAnchor="middle">Radiation</text>
+
+              <circle className="research-node node-5" cx="140" cy="330" r="18" />
+              <text className="node-label" x="140" y="360" textAnchor="middle">Plant Science</text>
+
+              <circle className="research-node node-6" cx="60" cy="240" r="18" />
+              <text className="node-label" x="25" y="245" textAnchor="middle">Genomics</text>
+
+              <circle className="research-node node-7" cx="90" cy="130" r="18" />
+              <text className="node-label" x="60" y="125" textAnchor="middle">Cell Biology</text>
+
+              <circle className="research-node node-8" cx="280" cy="200" r="18" />
+              <text className="node-label" x="310" y="205" textAnchor="middle">Physiology</text>
+
+              {/* Outer Circle Research Nodes */}
+              <circle className="research-node node-9" cx="200" cy="30" r="14" />
+              <text className="node-label" x="200" y="18" textAnchor="middle">Genetics</text>
+
+              <circle className="research-node node-10" cx="340" cy="80" r="14" />
+              <text className="node-label" x="365" y="75" textAnchor="middle">Immunology</text>
+
+              <circle className="research-node node-11" cx="370" cy="200" r="14" />
+              <text className="node-label" x="395" y="205" textAnchor="middle">Medicine</text>
+
+              <circle className="research-node node-12" cx="320" cy="340" r="14" />
+              <text className="node-label" x="345" y="345" textAnchor="middle">Ecology</text>
+
+              <circle className="research-node node-13" cx="200" cy="370" r="14" />
+              <text className="node-label" x="200" y="390" textAnchor="middle">Biochemistry</text>
+
+              <circle className="research-node node-14" cx="80" cy="340" r="14" />
+              <text className="node-label" x="55" y="345" textAnchor="middle">Neuroscience</text>
+
+              <circle className="research-node node-15" cx="30" cy="200" r="14" />
+              <text className="node-label" x="5" y="205" textAnchor="middle">Bioinformatics</text>
+
+              <circle className="research-node node-16" cx="60" cy="80" r="14" />
+              <text className="node-label" x="35" y="75" textAnchor="middle">Proteomics</text>
+
+              {/* Central Connections to Inner Circle */}
+              <line className="connection conn-1" x1="200" y1="200" x2="200" y2="80" />
+              <line className="connection conn-2" x1="200" y1="200" x2="310" y2="130" />
+              <line className="connection conn-3" x1="200" y1="200" x2="340" y2="240" />
+              <line className="connection conn-4" x1="200" y1="200" x2="260" y2="330" />
+              <line className="connection conn-5" x1="200" y1="200" x2="140" y2="330" />
+              <line className="connection conn-6" x1="200" y1="200" x2="60" y2="240" />
+              <line className="connection conn-7" x1="200" y1="200" x2="90" y2="130" />
+              <line className="connection conn-8" x1="200" y1="200" x2="280" y2="200" />
+
+              {/* Inner Circle Connections */}
+              <line className="connection-secondary" x1="200" y1="80" x2="310" y2="130" />
+              <line className="connection-secondary" x1="310" y1="130" x2="340" y2="240" />
+              <line className="connection-secondary" x1="340" y1="240" x2="260" y2="330" />
+              <line className="connection-secondary" x1="260" y1="330" x2="140" y2="330" />
+              <line className="connection-secondary" x1="140" y1="330" x2="60" y2="240" />
+              <line className="connection-secondary" x1="60" y1="240" x2="90" y2="130" />
+              <line className="connection-secondary" x1="90" y1="130" x2="200" y2="80" />
+
+              {/* Inner to Outer Connections */}
+              <line className="connection-tertiary" x1="200" y1="80" x2="200" y2="30" />
+              <line className="connection-tertiary" x1="310" y1="130" x2="340" y2="80" />
+              <line className="connection-tertiary" x1="340" y1="240" x2="370" y2="200" />
+              <line className="connection-tertiary" x1="260" y1="330" x2="320" y2="340" />
+              <line className="connection-tertiary" x1="140" y1="330" x2="200" y2="370" />
+              <line className="connection-tertiary" x1="60" y1="240" x2="30" y2="200" />
+              <line className="connection-tertiary" x1="90" y1="130" x2="60" y2="80" />
+              <line className="connection-tertiary" x1="280" y1="200" x2="370" y2="200" />
+
+              {/* Cross Connections */}
+              <line className="connection-quaternary" x1="200" y1="30" x2="340" y2="80" />
+              <line className="connection-quaternary" x1="340" y1="80" x2="370" y2="200" />
+              <line className="connection-quaternary" x1="370" y1="200" x2="320" y2="340" />
+              <line className="connection-quaternary" x1="320" y1="340" x2="200" y2="370" />
+              <line className="connection-quaternary" x1="200" y1="370" x2="80" y2="340" />
+              <line className="connection-quaternary" x1="80" y1="340" x2="30" y2="200" />
+              <line className="connection-quaternary" x1="30" y1="200" x2="60" y2="80" />
+              <line className="connection-quaternary" x1="60" y1="80" x2="200" y2="30" />
+
+              {/* Data Particles - More particles */}
+              <circle className="data-particle particle-1" cx="200" cy="140" r="4" />
+              <circle className="data-particle particle-2" cx="255" cy="165" r="4" />
+              <circle className="data-particle particle-3" cx="270" cy="220" r="4" />
+              <circle className="data-particle particle-4" cx="230" cy="265" r="4" />
+              <circle className="data-particle particle-5" cx="170" cy="265" r="4" />
+              <circle className="data-particle particle-6" cx="130" cy="220" r="4" />
+              <circle className="data-particle particle-7" cx="145" cy="165" r="4" />
+              <circle className="data-particle particle-8" cx="240" cy="200" r="4" />
+              <circle className="data-particle particle-9" cx="200" cy="55" r="3" />
+              <circle className="data-particle particle-10" cx="325" cy="105" r="3" />
+              <circle className="data-particle particle-11" cx="355" cy="220" r="3" />
+              <circle className="data-particle particle-12" cx="290" cy="335" r="3" />
+            </svg>
+            <div className="network-info">
+              <p className="network-text">Exploring Interconnected Research</p>
             </div>
           </div>
         </div>

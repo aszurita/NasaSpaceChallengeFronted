@@ -174,7 +174,7 @@ The research shows a ${certainty}% certainty match with your query, providing va
 
       <nav className="top-navbar">
         <div className="nav-content">
-          <h1 className="nav-logo">Spaceper</h1>
+          <h1 className="nav-logo">BioSeek</h1>
           <form className="nav-search-form" onSubmit={handleSearchSubmit}>
             <div className="nav-search-container">
               <svg className="nav-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
