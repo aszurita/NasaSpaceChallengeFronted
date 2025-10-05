@@ -122,24 +122,41 @@ The research shows a ${certainty}% certainty match with your query, providing va
   // Process insight text to add interactive references
   const processInsightWithReferences = (text: string) => {
     if (!insightReferences.length) return text;
-    
+
     // Split text by references and create elements
     const parts = text.split(/(\[\d+\])/g);
-    
+
     return parts.map((part, index) => {
       const refMatch = part.match(/\[(\d+)\]/);
       if (refMatch) {
         const refNumber = parseInt(refMatch[1]);
         const reference = insightReferences.find(ref => ref.id === refNumber);
-        
+
         if (reference) {
           return (
-            <span 
+            <span
               key={index}
-              className="insight-reference" 
+              className="insight-reference"
               data-ref-id={refNumber}
               onMouseEnter={() => setHoveredReference(refNumber)}
               onMouseLeave={() => setHoveredReference(null)}
+              onClick={() => {
+                // Find the paper in results and scroll to it
+                const paper = results.find(p => p && p.title === reference.title);
+                if (paper) {
+                  const paperIndex = results.indexOf(paper);
+                  const paperElement = document.querySelector(`[data-paper-index="${paperIndex}"]`);
+                  if (paperElement) {
+                    paperElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Add temporary highlight
+                    paperElement.classList.add('highlight-flash');
+                    setTimeout(() => {
+                      paperElement.classList.remove('highlight-flash');
+                    }, 2000);
+                  }
+                }
+              }}
+              style={{ cursor: 'pointer' }}
             >
               [{refNumber}]
             </span>
@@ -236,58 +253,6 @@ The research shows a ${certainty}% certainty match with your query, providing va
               )}
             </section>
 
-            {/* References Section */}
-            {insightReferences && insightReferences.length > 0 && (
-              <section className="references-section">
-                <h2 className="section-title">
-                  <span className="icon">📚</span> Referenced Papers
-                </h2>
-                <div className="references-grid">
-                  {insightReferences.map((ref, index) => {
-                    if (!ref || !ref.id) return null;
-                    
-                    return (
-                      <div 
-                        key={ref.id || index}
-                        className={`reference-card ${hoveredReference === ref.id ? 'highlighted' : ''}`}
-                        onMouseEnter={() => setHoveredReference(ref.id)}
-                        onMouseLeave={() => setHoveredReference(null)}
-                        onClick={() => {
-                          // Find the paper in results and navigate to it
-                          const paper = results.find(p => p && p.title === ref.title);
-                          if (paper) onPaperClick(paper);
-                        }}
-                      >
-                        <div className="reference-header">
-                          <div className="reference-number">[{ref.id}]</div>
-                          <div className="reference-certainty">
-                            {ref.certainty ? (ref.certainty * 100).toFixed(1) : '0.0'}%
-                          </div>
-                        </div>
-                        <h4 className="reference-title">{ref.title || 'Untitled Paper'}</h4>
-                        <div className="reference-actions">
-                          {ref.link && (
-                            <a 
-                              href={ref.link} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="reference-link"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              📄 View Source
-                            </a>
-                          )}
-                          <span className="reference-action">
-                            👁️ View Details
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
             {/* Papers Grid */}
             <section className="papers-section">
               <h2 className="section-title">
@@ -298,6 +263,7 @@ The research shows a ${certainty}% certainty match with your query, providing va
                   <div
                     key={index}
                     className="paper-card"
+                    data-paper-index={index}
                     onClick={() => onPaperClick(paper)}
                   >
                     <div className="paper-header">
